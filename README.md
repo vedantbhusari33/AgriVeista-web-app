@@ -17,9 +17,14 @@ AgriVista is a web-based smart farming assistant designed to help farmers make b
 https://agriveista.vercel.app
 
 ## 📸 Screenshots
-![WhatsApp Image 2026-04-03 at 2 51 48 PM](https://github.com/user-attachments/assets/04aea5df-dd24-45fd-b516-b641347cab05)
-![WhatsApp Image 2026-04-03 at 2 51 48 PM (1)](https://github.com/user-attachments/assets/ae27e653-ea73-481e-b978-63cbd1bb8265)
 
+### 🏠 Home Page
+<img src="./screenshots/home.png" width="600"/>
+![WhatsApp Image 2026-04-03 at 2 51 48 PM](https://github.com/user-attachments/assets/04aea5df-dd24-45fd-b516-b641347cab05)
+
+### 🌾 Features Page
+<img src="./screenshots/features.png" width="600"/>
+![WhatsApp Image 2026-04-03 at 2 51 48 PM (1)](https://github.com/user-attachments/assets/ae27e653-ea73-481e-b978-63cbd1bb8265)
 
 ## ⚙️ Installation
 
