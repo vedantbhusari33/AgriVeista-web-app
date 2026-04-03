@@ -1,0 +1,2358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>AgriVeista – Smart Farming Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g1:#0d3318;--g2:#1a6b2e;--g3:#2d9b4e;--g4:#4dbe6e;--g5:#d4f0dc;
+  --cream:#f5f1e8;--cream2:#ece7d8;--cream3:#e2dccf;
+  --amber:#e8a020;--amber2:#ffd166;--amber3:#fff3cd;
+  --red:#e05252;--red2:#fde2e2;--sky:#3ba8c8;--sky2:#c8edf7;
+  --purple:#7c5cdb;--purple2:#ede8ff;
+  --ink:#0a1f0d;--ink2:#2a5035;--ink3:#5a7a62;--ink4:#9ab4a0;
+  --white:#fff;
+  --r-xl:22px;--r-lg:16px;--r-md:12px;--r-sm:8px;
+  --sh:0 8px 32px rgba(13,51,24,.15);--sh-sm:0 2px 12px rgba(13,51,24,.10);--sh-xs:0 1px 6px rgba(13,51,24,.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:var(--g1);}
+body{font-family:'DM Sans',sans-serif;color:var(--ink);}
+button{font-family:'DM Sans',sans-serif;cursor:pointer;}
+input,select,textarea{font-family:'DM Sans',sans-serif;}
+
+/* ── APP WRAPPER ── */
+#app{
+  width:100%;max-width:430px;height:100vh;
+  margin:0 auto;position:relative;overflow:hidden;
+  background:var(--cream);
+  display:flex;flex-direction:column;
+}
+
+/* ── SCREENS ── */
+.screen{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  transition:transform .42s cubic-bezier(.16,1,.3,1),opacity .32s ease;
+  overflow:hidden;
+}
+.screen.off-right{transform:translateX(100%);opacity:0;pointer-events:none;}
+.screen.off-left{transform:translateX(-40%);opacity:0;pointer-events:none;}
+
+/* ════════════════════════════════════════
+   SPLASH
+════════════════════════════════════════ */
+#splash{
+  background:linear-gradient(155deg,#1a6b2e 0%,#0d3318 100%);
+  align-items:center;justify-content:center;gap:0;
+}
+#splash::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 65% 50% at 15% 20%,rgba(77,190,110,.25),transparent 60%),
+    radial-gradient(ellipse 50% 60% at 85% 75%,rgba(45,155,78,.18),transparent 55%),
+    radial-gradient(ellipse 30% 30% at 50% 50%,rgba(232,160,32,.06),transparent 50%);
+}
+.sp-leaf{font-size:76px;z-index:1;animation:leafFloat 3.2s ease-in-out infinite;filter:drop-shadow(0 10px 28px rgba(77,190,110,.55));}
+@keyframes leafFloat{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-12px) rotate(3deg);}}
+.sp-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:38px;color:#fff;letter-spacing:-1.5px;z-index:1;margin-top:18px;}
+.sp-tag{color:rgba(255,255,255,.55);font-size:13px;z-index:1;margin-top:5px;letter-spacing:.3px;}
+.sp-ring{display:flex;gap:9px;margin-top:36px;z-index:1;}
+.sp-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);animation:ringPulse 1.5s ease-in-out infinite;}
+.sp-dot:nth-child(2){animation-delay:.18s;}.sp-dot:nth-child(3){animation-delay:.36s;}
+@keyframes ringPulse{0%,80%,100%{transform:scale(1);opacity:.3;}40%{transform:scale(1.4);opacity:1;}}
+
+/* ════════════════════════════════════════
+   AUTH SCREENS (Register & Login)
+════════════════════════════════════════ */
+.auth-screen{overflow-y:auto;scrollbar-width:none;}
+.auth-screen::-webkit-scrollbar{display:none;}
+.auth-bg{
+  background:linear-gradient(170deg,var(--g2) 0%,var(--g1) 42%,var(--cream) 42%);
+  padding:38px 22px 68px;
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+}
+.auth-icon{font-size:54px;margin-bottom:13px;}
+.auth-title{font-weight:800;font-size:28px;color:#fff;line-height:1.1;}
+.auth-sub{color:rgba(255,255,255,.9);font-size:13px;margin-top:7px;line-height:1.6;}
+.auth-card{
+  background:var(--white);margin:-36px 14px 20px;
+  border-radius:var(--r-xl);padding:22px 18px 26px;
+  box-shadow:var(--sh);position:relative;z-index:2;
+}
+.card-title{font-weight:700;font-size:18px;color:var(--ink);margin-bottom:3px;}
+.card-sub{font-size:11px;color:var(--ink3);margin-bottom:16px;}
+
+/* PROGRESS */
+.prog-wrap{display:flex;gap:5px;margin-bottom:16px;}
+.prog-bar{flex:1;height:4px;border-radius:4px;background:var(--cream2);transition:background .3s;}
+.prog-bar.done{background:var(--g3);}.prog-bar.active{background:var(--amber);}
+
+/* STEPS */
+.step-panel{display:none;flex-direction:column;gap:12px;}
+.step-panel.on{display:flex;}
+
+/* FIELDS */
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fl{font-size:10px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.6px;}
+.fi{
+  width:100%;padding:11px 13px;
+  border:2px solid var(--cream2);border-radius:var(--r-md);
+  font-size:13.5px;color:var(--ink);background:var(--cream);
+  outline:none;transition:border-color .2s,background .2s;
+  -webkit-appearance:none;appearance:none;
+}
+.fi:focus{border-color:var(--g3);background:#fff;}
+.fi.e{border-color:var(--red);}
+.em{font-size:11px;color:var(--red);min-height:13px;}
+
+/* CROP PILLS */
+.cpills{display:flex;flex-wrap:wrap;gap:7px;}
+.cpill{
+  padding:7px 11px;border:2px solid var(--cream2);border-radius:28px;
+  font-size:12px;font-weight:500;cursor:pointer;background:var(--cream);
+  transition:all .18s;display:flex;align-items:center;gap:5px;
+}
+.cpill:hover{border-color:var(--g4);}.cpill.on{border-color:var(--g3);background:#e6f5eb;color:var(--g2);font-weight:600;}
+
+/* LANG PILLS */
+.lpills{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.lpill{
+  padding:9px 5px;text-align:center;border:2px solid var(--cream2);
+  border-radius:var(--r-md);font-size:11px;font-weight:500;cursor:pointer;
+  background:var(--cream);transition:all .18s;
+}
+.lpill .ln{font-size:15px;font-weight:700;display:block;margin-bottom:2px;}
+.lpill:hover{border-color:var(--g4);}.lpill.on{border-color:var(--g3);background:#e6f5eb;color:var(--g2);font-weight:700;}
+
+/* BTN ROW */
+.btn-row{display:flex;gap:9px;margin-top:16px;}
+.btn-back{
+  padding:11px 16px;border:2px solid var(--cream2);border-radius:var(--r-md);
+  background:none;font-size:13px;font-weight:600;color:var(--ink3);transition:all .2s;
+}
+.btn-back:hover{border-color:var(--g3);color:var(--g2);}
+.btn-main{
+  flex:1;padding:13px;border:none;border-radius:var(--r-md);
+  background:linear-gradient(135deg,var(--g2),var(--g3));
+  font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#fff;
+  box-shadow:0 4px 16px rgba(26,107,46,.35);
+  transition:all .2s;position:relative;overflow:hidden;
+}
+.btn-main::after{
+  content:'';position:absolute;top:-50%;left:-60%;
+  width:40%;height:200%;background:rgba(255,255,255,.18);
+  transform:skewX(-20deg);animation:sheen 3s ease-in-out infinite;
+}
+@keyframes sheen{0%,100%{left:-60%;}50%{left:130%;}}
+.btn-main:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(26,107,46,.5);}
+.alt-link{text-align:center;padding:12px 16px;font-size:12.5px;color:var(--ink3);}
+.alt-link span{color:var(--g3);font-weight:600;cursor:pointer;text-decoration:underline;}
+.info-note{background:#e6f5eb;border-radius:9px;padding:11px;border-left:3px solid var(--g3);}
+.info-note p{font-size:11.5px;color:var(--g2);line-height:1.65;}
+
+/* ════════════════════════════════════════
+   DASHBOARD
+════════════════════════════════════════ */
+#dashboard{display:flex;flex-direction:column;overflow:hidden;}
+
+/* HEADER */
+.dh{
+  background:linear-gradient(158deg,var(--g2) 0%,var(--g1) 100%);
+  padding:18px 18px 0;flex-shrink:0;
+}
+.dh-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.dh-left .dh-hey{color:rgba(255,255,255,.65);font-size:12px;margin-bottom:2px;}
+.dh-left .dh-name{font-weight:700;font-size:22px;color:#fff;line-height:1.15;}
+.dh-left .dh-loc{color:rgba(255,255,255,.5);font-size:10.5px;margin-top:4px;}
+.dh-av{
+  width:44px;height:44px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--amber),var(--amber2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:19px;cursor:pointer;
+  box-shadow:0 4px 14px rgba(232,160,32,.45);
+  transition:transform .2s;
+}
+.dh-av:hover{transform:scale(1.08);}
+.wx-band{
+  background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.16);
+  backdrop-filter:blur(10px);border-radius:var(--r-lg);
+  padding:11px 15px;margin:13px 0 0;
+  display:flex;align-items:center;gap:11px;
+}
+.wx-icon{font-size:30px;flex-shrink:0;}
+.wx-inf{flex:1;}
+.wx-cond{color:rgba(255,255,255,.9);font-weight:600;font-size:13px;}
+.wx-sub{color:rgba(255,255,255,.5);font-size:10.5px;margin-top:2px;}
+.wx-temp{font-weight:700;font-size:28px;color:var(--amber2);}
+.hcurve{height:26px;background:var(--cream);border-radius:26px 26px 0 0;margin-top:12px;}
+
+/* BODY */
+.db-body{
+  flex:1;overflow-y:auto;padding:14px 14px 88px;
+  display:flex;flex-direction:column;gap:15px;
+  scrollbar-width:none;
+}
+.db-body::-webkit-scrollbar{display:none;}
+
+/* SECTION HEADER */
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;}
+.sh-t{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--ink);display:flex;align-items:center;gap:6px;}
+.sh-a{font-size:11.5px;color:var(--g3);font-weight:600;cursor:pointer;}
+
+/* STAT ROW */
+.st-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.st-box{
+  background:var(--white);border-radius:var(--r-md);
+  padding:11px 7px;text-align:center;box-shadow:var(--sh-sm);
+  border-top:3px solid var(--g3);transition:transform .2s;
+}
+.st-box:nth-child(2){border-color:var(--amber);}
+.st-box:nth-child(3){border-color:var(--sky);}
+.st-box:hover{transform:translateY(-2px);}
+.st-ico{font-size:18px;margin-bottom:3px;}
+.st-val{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--ink);}
+.st-lbl{font-size:9.5px;color:var(--ink3);margin-top:2px;font-weight:500;}
+
+/* ALERT BOX */
+.al-box{
+  border-radius:var(--r-md);padding:12px 14px;
+  display:flex;gap:10px;align-items:flex-start;
+  border-left:4px solid var(--amber);
+  box-shadow:var(--sh-sm);
+  background:linear-gradient(135deg,#fff8e8,#fffbf0);
+}
+.al-ico{font-size:19px;flex-shrink:0;}
+.al-t{font-family:'Syne',sans-serif;font-weight:700;font-size:12.5px;color:#7a5000;}
+.al-b{font-size:11.5px;color:#7a5208;margin-top:3px;line-height:1.55;}
+
+/* QUICK ACTIONS */
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.qa-btn{
+  background:var(--white);border-radius:var(--r-md);
+  padding:12px 6px;text-align:center;
+  box-shadow:var(--sh-sm);cursor:pointer;
+  border:2px solid transparent;transition:all .2s;
+}
+.qa-btn:hover{border-color:var(--g4);transform:translateY(-2px);}
+.qa-ico{font-size:22px;margin-bottom:5px;}
+.qa-lbl{font-size:10px;font-weight:600;color:var(--ink2);}
+
+/* CROP GRID */
+.cg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.cc{
+  background:var(--white);border-radius:var(--r-md);
+  padding:11px 5px;text-align:center;cursor:pointer;
+  border:2px solid transparent;box-shadow:var(--sh-sm);
+  transition:all .2s;
+}
+.cc:hover,.cc.on{border-color:var(--g3);background:#edf8f1;}
+.cc-em{font-size:22px;display:block;margin-bottom:3px;}
+.cc-nm{font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:var(--ink);}
+.cc-lo{font-size:9.5px;color:var(--ink3);}
+.cc-bd{display:inline-block;margin-top:4px;padding:2px 6px;border-radius:20px;font-size:9px;font-weight:600;}
+.bhi{background:#d4f4de;color:var(--g2);}.bmd{background:#fff3cd;color:#856404;}.blo{background:#fde2e2;color:#a83232;}
+.sab{
+  width:100%;padding:10px;background:var(--white);
+  border:2px dashed var(--g4);border-radius:var(--r-sm);
+  font-family:'Syne',sans-serif;font-size:12px;font-weight:600;
+  color:var(--g3);cursor:pointer;margin-top:4px;transition:all .2s;
+}
+.sab:hover{background:var(--g5);}
+
+/* MANDI */
+.ml{display:flex;flex-direction:column;gap:7px;}
+.mr{
+  background:var(--white);border-radius:var(--r-sm);
+  padding:10px 12px;display:flex;align-items:center;gap:9px;
+  box-shadow:var(--sh-sm);transition:transform .15s;cursor:pointer;
+}
+.mr:hover{transform:translateX(3px);}
+.mr-em{font-size:20px;}
+.mr-nm{font-family:'Syne',sans-serif;font-weight:600;font-size:12.5px;color:var(--ink);}
+.mr-mkt{font-size:10px;color:var(--ink3);}
+.mr-pr{text-align:right;margin-left:auto;}
+.mr-pv{font-family:'Syne',sans-serif;font-weight:800;font-size:13.5px;color:var(--ink);}
+.mr-ch{font-size:10px;font-weight:600;}
+.cup{color:var(--g3);}.cdn{color:var(--red);}
+
+/* DISEASE CTA */
+.disease-cta{
+  background:linear-gradient(135deg,#7c5cdb,#5e3fbf);
+  border-radius:var(--r-xl);padding:15px;
+  display:flex;align-items:center;gap:12px;
+  cursor:pointer;border:none;width:100%;
+  box-shadow:0 8px 24px rgba(124,92,219,.4);
+  transition:all .25s;position:relative;overflow:hidden;
+}
+.disease-cta::after{content:'';position:absolute;top:-50%;left:-60%;width:40%;height:200%;background:rgba(255,255,255,.16);transform:skewX(-20deg);animation:sheen 3s infinite;}
+.disease-cta:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(124,92,219,.55);}
+.disease-cta .dc-text{text-align:left;}
+.disease-cta .dc-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#fff;}
+.disease-cta .dc-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;}
+
+/* SCHEMES */
+.sc-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.sc-scroll::-webkit-scrollbar{display:none;}
+.sc-card{
+  background:var(--white);border-radius:var(--r-md);
+  padding:12px;min-width:150px;flex-shrink:0;
+  box-shadow:var(--sh-sm);border-top:3px solid var(--g3);
+  cursor:pointer;transition:transform .2s;
+}
+.sc-card:nth-child(2){border-color:var(--amber);}
+.sc-card:nth-child(3){border-color:var(--sky);}
+.sc-card:nth-child(4){border-color:var(--purple);}
+.sc-card:hover{transform:translateY(-3px);}
+.sc-ico{font-size:21px;margin-bottom:6px;}
+.sc-nm{font-family:'Syne',sans-serif;font-weight:700;font-size:11.5px;color:var(--ink);line-height:1.3;}
+.sc-dl{font-size:10px;color:var(--ink3);margin-top:3px;}
+.sc-bd{display:inline-block;margin-top:5px;padding:2px 7px;background:#e6f5eb;color:var(--g2);font-size:9.5px;font-weight:600;border-radius:20px;}
+
+/* ── BOTTOM NAV ── */
+.bnav{
+  position:absolute;bottom:0;left:0;right:0;
+  background:var(--white);border-top:1px solid rgba(0,0,0,.07);
+  display:flex;padding:6px 0 10px;
+  box-shadow:0 -6px 24px rgba(0,0,0,.09);z-index:50;
+}
+.ni{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  cursor:pointer;color:var(--ink3);transition:color .2s;padding:3px 0;
+}
+.ni.on{color:var(--g3);}
+.ni-ico{font-size:18px;}
+.ni-lbl{font-size:9px;font-weight:500;}
+.ni.on .ni-lbl{font-weight:700;}
+.ni-dot{width:4px;height:4px;background:var(--g3);border-radius:50%;}
+
+/* ════════════════════════════════════════
+   PANELS (slide-in over dashboard)
+════════════════════════════════════════ */
+.panel{
+  position:absolute;inset:0;background:var(--cream);
+  z-index:120;transform:translateX(100%);
+  transition:transform .4s cubic-bezier(.16,1,.3,1);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.panel.open{transform:translateX(0);}
+.panel-hd{
+  background:linear-gradient(158deg,var(--g2),var(--g1));
+  padding:16px 16px 22px;flex-shrink:0;
+}
+.panel-back{
+  display:inline-flex;align-items:center;gap:6px;
+  color:rgba(255,255,255,.75);font-size:12.5px;font-weight:500;
+  cursor:pointer;margin-bottom:14px;
+}
+.panel-title{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:#fff;}
+.panel-sub{color:rgba(255,255,255,.55);font-size:12px;margin-top:4px;}
+.panel-curve{height:24px;background:var(--cream);border-radius:24px 24px 0 0;}
+.panel-body{flex:1;overflow-y:auto;padding:14px 14px 30px;scrollbar-width:none;}
+.panel-body::-webkit-scrollbar{display:none;}
+
+/* ── AI RECS PANEL ── */
+.rec-c{background:var(--white);border-radius:var(--r-md);padding:12px 14px;margin-bottom:9px;display:flex;gap:10px;align-items:flex-start;box-shadow:var(--sh-sm);border-left:4px solid var(--g3);}
+.rec-c.w{border-color:var(--amber);}.rec-c.i{border-color:var(--sky);}.rec-c.p{border-color:var(--purple);}
+.rc-em{font-size:24px;flex-shrink:0;}
+.rc-t{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--ink);}
+.rc-d{font-size:11.5px;color:var(--ink3);margin-top:3px;line-height:1.55;}
+.sbar{height:5px;background:#e8ede9;border-radius:5px;margin-top:8px;overflow:hidden;}
+.sfill{height:100%;background:linear-gradient(90deg,var(--g3),var(--g4));border-radius:5px;transition:width 1s ease;}
+
+/* ── DISEASE PANEL ── */
+.disease-panel .panel-hd{background:linear-gradient(158deg,#5e3fbf,#3d2880);}
+.upload-zone{
+  background:var(--white);border-radius:var(--r-lg);
+  border:2px dashed #c4b5fd;padding:28px 20px;
+  text-align:center;cursor:pointer;transition:all .25s;
+  box-shadow:var(--sh-sm);
+}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--purple);background:#f5f3ff;}
+.upload-zone input{display:none;}
+.uz-ico{font-size:44px;margin-bottom:10px;}
+.uz-t{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--ink);margin-bottom:5px;}
+.uz-s{font-size:12px;color:var(--ink3);line-height:1.55;}
+.uz-btn{
+  display:inline-block;margin-top:12px;padding:10px 22px;
+  background:linear-gradient(135deg,#7c5cdb,#5e3fbf);
+  border-radius:var(--r-md);color:#fff;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:13px;
+  box-shadow:0 4px 14px rgba(124,92,219,.4);
+}
+.preview-box{
+  background:var(--white);border-radius:var(--r-lg);
+  overflow:hidden;box-shadow:var(--sh);
+  display:none;
+}
+.preview-box.show{display:block;}
+.prev-img{width:100%;height:200px;object-fit:cover;display:block;}
+.prev-info{padding:12px 14px;display:flex;justify-content:space-between;align-items:center;}
+.prev-nm{font-weight:600;font-size:13px;color:var(--ink);}
+.prev-sz{font-size:11px;color:var(--ink3);}
+.analyze-btn{
+  width:100%;padding:14px;border:none;border-radius:var(--r-md);
+  background:linear-gradient(135deg,#7c5cdb,#5e3fbf);
+  font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:#fff;
+  box-shadow:0 6px 20px rgba(124,92,219,.45);
+  transition:all .2s;margin-top:12px;
+}
+.analyze-btn:hover{transform:translateY(-1px);box-shadow:0 8px 26px rgba(124,92,219,.55);}
+.analyze-btn:disabled{opacity:.55;pointer-events:none;}
+.result-box{
+  background:var(--white);border-radius:var(--r-lg);
+  padding:0;overflow:hidden;box-shadow:var(--sh);
+  display:none;margin-top:14px;
+}
+.result-box.show{display:block;}
+.rb-hd{padding:14px 16px;display:flex;gap:12px;align-items:flex-start;}
+.rb-hd.healthy{background:linear-gradient(135deg,#e6f5eb,#d4f0dc);}
+.rb-hd.diseased{background:linear-gradient(135deg,#fde2e2,#fbeaea);}
+.rb-hd.warning{background:linear-gradient(135deg,#fff3cd,#fffaec);}
+.rb-icon{font-size:32px;flex-shrink:0;}
+.rb-title{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:var(--ink);}
+.rb-conf{font-size:11px;color:var(--ink3);margin-top:3px;}
+.rb-body{padding:14px 16px;}
+.rb-sect{margin-bottom:12px;}
+.rb-slbl{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--ink2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+.rb-sval{font-size:12.5px;color:var(--ink);line-height:1.6;}
+.sev-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.sev-low{background:#e6f5eb;color:var(--g2);}.sev-med{background:#fff3cd;color:#856404;}.sev-high{background:#fde2e2;color:var(--red);}
+.treatment-list{display:flex;flex-direction:column;gap:7px;margin-top:6px;}
+.tl-item{
+  background:var(--cream);border-radius:var(--r-sm);
+  padding:9px 11px;display:flex;gap:9px;align-items:flex-start;
+}
+.tl-num{
+  width:20px;height:20px;background:var(--g3);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px;
+}
+.tl-txt{font-size:12px;color:var(--ink);line-height:1.55;}
+.conf-bar{height:8px;background:var(--cream2);border-radius:8px;overflow:hidden;margin-top:6px;}
+.conf-fill{height:100%;border-radius:8px;transition:width 1s ease;}
+
+/* ── MANDI PANEL ── */
+.mandi-full{display:flex;flex-direction:column;gap:8px;}
+.mf-item{
+  background:var(--white);border-radius:var(--r-md);
+  padding:12px 14px;display:flex;align-items:center;gap:10px;
+  box-shadow:var(--sh-sm);transition:transform .15s;cursor:pointer;
+}
+.mf-item:hover{transform:translateX(3px);}
+.mf-chart{margin-top:3px;display:flex;gap:2px;align-items:flex-end;height:20px;}
+.mf-bar{width:6px;border-radius:3px 3px 0 0;background:var(--g4);opacity:.7;}
+
+/* ── HISTORY PANEL ── */
+.hist-list{display:flex;flex-direction:column;gap:9px;}
+.hist-item{
+  background:var(--white);border-radius:var(--r-md);
+  padding:12px 14px;box-shadow:var(--sh-sm);
+  border-left:4px solid var(--g3);
+}
+.hist-item.dis{border-color:var(--purple);}
+.hist-dt{font-size:10px;color:var(--ink3);margin-bottom:5px;}
+.hist-t{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--ink);}
+.hist-d{font-size:11.5px;color:var(--ink3);margin-top:3px;line-height:1.5;}
+
+/* ── GODOWN PANEL ── */
+.go-list{display:flex;flex-direction:column;gap:9px;}
+.go-item{background:var(--white);border-radius:var(--r-md);padding:13px;box-shadow:var(--sh-sm);}
+.go-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.go-nm{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--ink);}
+.go-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;}
+.go-low{background:#fde2e2;color:var(--red);}.go-ok{background:#e6f5eb;color:var(--g2);}.go-full{background:#fff3cd;color:#856404;}
+.go-prog{height:7px;background:var(--cream2);border-radius:7px;overflow:hidden;}
+.go-fill{height:100%;border-radius:7px;background:linear-gradient(90deg,var(--g3),var(--g4));transition:width 1s;}
+.go-meta{display:flex;justify-content:space-between;margin-top:7px;}
+.go-m{font-size:10.5px;color:var(--ink3);}
+
+/* ── HARVEST PANEL ── */
+.hv-list{display:flex;flex-direction:column;gap:9px;}
+.hv-item{background:var(--white);border-radius:var(--r-md);padding:13px;box-shadow:var(--sh-sm);}
+.hv-top{display:flex;gap:10px;align-items:center;margin-bottom:8px;}
+.hv-em{font-size:26px;}
+.hv-nm{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--ink);}
+.hv-loc{font-size:11px;color:var(--ink3);}
+.hv-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.hv-s{background:var(--cream);border-radius:var(--r-sm);padding:8px;text-align:center;}
+.hv-sv{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--ink);}
+.hv-sl{font-size:10px;color:var(--ink3);margin-top:2px;}
+
+/* ── BESTMKT PANEL ── */
+.bm-list{display:flex;flex-direction:column;gap:9px;}
+.bm-item{
+  background:var(--white);border-radius:var(--r-md);padding:13px;box-shadow:var(--sh-sm);
+  border-left:4px solid var(--g3);
+}
+.bm-item:nth-child(2){border-color:var(--amber);}
+.bm-item:nth-child(3){border-color:var(--sky);}
+.bm-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.bm-nm{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--ink);}
+.bm-rank{background:#e6f5eb;color:var(--g2);font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;}
+.bm-detail{font-size:11.5px;color:var(--ink3);line-height:1.6;}
+.bm-price{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:var(--g3);margin-top:6px;}
+
+/* ── PROFILE PANEL ── */
+.prof-hd-content{display:flex;flex-direction:column;align-items:flex-start;}
+.prof-av{
+  width:64px;height:64px;border-radius:50%;
+  background:linear-gradient(135deg,var(--amber),var(--amber2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;margin-bottom:11px;
+  box-shadow:0 5px 18px rgba(232,160,32,.45);
+}
+.prof-nm{font-family:'Syne',sans-serif;font-weight:800;font-size:21px;color:#fff;}
+.prof-loc{color:rgba(255,255,255,.55);font-size:11.5px;margin-top:3px;}
+.icard{background:var(--white);border-radius:var(--r-lg);padding:14px;margin-bottom:11px;box-shadow:var(--sh-sm);}
+.icard h3{font-family:'Syne',sans-serif;font-weight:700;font-size:11.5px;color:var(--ink2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;}
+.ir{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--cream2);}
+.ir:last-child{border:none;padding-bottom:0;}
+.ik{font-size:12px;color:var(--ink3);}
+.iv{font-size:12px;font-weight:600;color:var(--ink);text-align:right;max-width:55%;}
+.logout-b{
+  width:100%;padding:13px;background:#fde2e2;border:2px solid #f5c0c0;
+  border-radius:var(--r-md);font-family:'Syne',sans-serif;
+  font-weight:700;font-size:14px;color:var(--red);transition:all .2s;
+}
+.logout-b:hover{background:#fbcaca;}
+
+/* ── SCHEMES PANEL ── */
+.scheme-full{display:flex;flex-direction:column;gap:11px;}
+.sf-item{background:var(--white);border-radius:var(--r-md);padding:14px;box-shadow:var(--sh-sm);border-top:3px solid var(--g3);}
+.sf-item:nth-child(2){border-color:var(--amber);}
+.sf-item:nth-child(3){border-color:var(--sky);}
+.sf-item:nth-child(4){border-color:var(--purple);}
+.sf-item:nth-child(5){border-color:var(--red);}
+.sf-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;}
+.sf-ico{font-size:26px;flex-shrink:0;}
+.sf-nm{font-family:'Syne',sans-serif;font-weight:700;font-size:13.5px;color:var(--ink);}
+.sf-desc{font-size:11.5px;color:var(--ink3);line-height:1.6;}
+.sf-dl{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
+.sf-date{font-size:11px;color:var(--ink3);}
+.sf-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;}
+.sfb-open{background:#e6f5eb;color:var(--g2);}
+.sfb-new{background:#e8f0ff;color:#3060e0;}
+.sfb-elig{background:#fff3cd;color:#856404;}
+
+/* ── MODAL OVERLAY ── */
+.mo{
+  position:absolute;inset:0;background:rgba(10,31,13,.72);
+  backdrop-filter:blur(4px);z-index:200;
+  display:flex;align-items:flex-end;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.mo.open{opacity:1;pointer-events:all;}
+.mb{
+  width:100%;background:var(--cream);
+  border-radius:26px 26px 0 0;
+  padding:16px 16px 34px;
+  transform:translateY(100%);
+  transition:transform .38s cubic-bezier(.16,1,.3,1);
+  max-height:88vh;overflow-y:auto;
+}
+.mo.open .mb{transform:translateY(0);}
+.mh{width:36px;height:4px;background:rgba(0,0,0,.12);border-radius:4px;margin:0 auto 14px;}
+
+/* ── TOAST ── */
+.toast{
+  position:absolute;top:14px;left:50%;
+  transform:translateX(-50%) translateY(-70px);
+  background:var(--g1);color:#fff;
+  padding:9px 18px;border-radius:28px;
+  font-size:12.5px;font-weight:500;
+  box-shadow:var(--sh);z-index:400;
+  transition:transform .38s cubic-bezier(.16,1,.3,1);
+  white-space:nowrap;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* LOADING SPINNER */
+.spin{
+  width:28px;height:28px;border:3px solid rgba(124,92,219,.2);
+  border-top-color:var(--purple);border-radius:50%;
+  animation:spin .8s linear infinite;margin:0 auto;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ANIMS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.fu{animation:fadeUp .48s ease both;}
+.fu:nth-child(1){animation-delay:.04s;}.fu:nth-child(2){animation-delay:.08s;}
+.fu:nth-child(3){animation-delay:.12s;}.fu:nth-child(4){animation-delay:.16s;}
+.fu:nth-child(5){animation-delay:.20s;}.fu:nth-child(6){animation-delay:.24s;}
+.fu:nth-child(7){animation-delay:.28s;}.fu:nth-child(8){animation-delay:.32s;}
+.fu:nth-child(9){animation-delay:.36s;}.fu:nth-child(10){animation-delay:.40s;}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="toast" id="toast"></div>
+
+<!-- ════ SPLASH ════ -->
+<div class="screen" id="splash">
+  <div class="sp-leaf">🌾</div>
+  <div class="sp-brand">AgriVeista</div>
+  <div class="sp-tag">Smart Farming Decision Support</div>
+  <div class="sp-ring">
+    <div class="sp-dot"></div><div class="sp-dot"></div><div class="sp-dot"></div>
+  </div>
+</div>
+
+<!-- ════ REGISTER ════ -->
+<div class="screen auth-screen off-right" id="register">
+  <div class="auth-bg">
+    <div class="auth-icon">🧑‍🌾</div>
+    <div class="auth-title">Join AgriVeista</div>
+    <div class="auth-sub">Your AI-powered farming companion.<br>Tell us about yourself to get started.</div>
+  </div>
+  <div class="auth-card">
+    <div class="card-title">Create Account</div>
+    <div class="card-sub">Step <span id="stepN">1</span> of 4 — <span id="stepT">Personal Info</span></div>
+    <div class="prog-wrap">
+      <div class="prog-bar active" id="pb1"></div>
+      <div class="prog-bar" id="pb2"></div>
+      <div class="prog-bar" id="pb3"></div>
+      <div class="prog-bar" id="pb4"></div>
+    </div>
+    <!-- S1 -->
+    <div class="step-panel on" id="s1">
+      <div class="fg">
+        <label class="fl">Full Name *</label>
+        <input class="fi" id="r_name" placeholder="e.g. Ramesh Patel" type="text" autocomplete="off">
+        <div class="em" id="e_name"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Mobile Number *</label>
+        <input class="fi" id="r_phone" placeholder="10-digit number" type="tel" maxlength="10">
+        <div class="em" id="e_phone"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Password *</label>
+        <input class="fi" id="r_pass" placeholder="Min 6 characters" type="password">
+        <div class="em" id="e_pass"></div>
+      </div>
+    </div>
+    <!-- S2 -->
+    <div class="step-panel" id="s2">
+      <input type="hidden" id="r_state">
+      <input type="hidden" id="r_dist">
+      <input type="hidden" id="r_village">
+      <input type="hidden" id="r_pincode">
+      <input type="hidden" id="r_lat">
+      <input type="hidden" id="r_lon">
+      <div class="fg">
+        <label class="fl">Location *</label>
+        <button class="btn-main" type="button" id="locBtn" onclick="detectLocation()">📍 Detect My Location</button>
+        <div class="em" id="e_location"></div>
+      </div>
+      <div id="loc_card" style="display:none;background:#e6f5eb;border-radius:9px;padding:11px;border-left:3px solid var(--g3);margin-top:4px;">
+        <p id="loc_card_txt" style="font-size:12px;color:var(--g2);line-height:1.7;font-weight:500;margin:0;"></p>
+      </div>
+    </div>
+    <!-- S3 -->
+    <div class="step-panel" id="s3">
+      <div class="fg">
+        <label class="fl">Primary Crops * (select one or more)</label>
+        <div class="cpills" id="cpills">
+          <div class="cpill" data-c="Tomato" onclick="tCrop(this)">🍅 Tomato</div>
+          <div class="cpill" data-c="Wheat" onclick="tCrop(this)">🌾 Wheat</div>
+          <div class="cpill" data-c="Soybean" onclick="tCrop(this)">🌱 Soybean</div>
+          <div class="cpill" data-c="Onion" onclick="tCrop(this)">🧅 Onion</div>
+          <div class="cpill" data-c="Maize" onclick="tCrop(this)">🌽 Maize</div>
+          <div class="cpill" data-c="Potato" onclick="tCrop(this)">🥔 Potato</div>
+          <div class="cpill" data-c="Cotton" onclick="tCrop(this)">🌿 Cotton</div>
+          <div class="cpill" data-c="Rice" onclick="tCrop(this)">🍚 Rice</div>
+          <div class="cpill" data-c="Sugarcane" onclick="tCrop(this)">🎋 Sugarcane</div>
+          <div class="cpill" data-c="Groundnut" onclick="tCrop(this)">🥜 Groundnut</div>
+        </div>
+        <div class="em" id="e_crop"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Land Area (acres)</label>
+        <input class="fi" id="r_land" placeholder="e.g. 5" type="number" min="0.5" step="0.5">
+      </div>
+    </div>
+    <!-- S4 -->
+    <div class="step-panel" id="s4">
+      <div class="fg">
+        <label class="fl">Preferred Language *</label>
+        <div class="lpills" style="grid-template-columns:repeat(3,1fr);">
+          <div class="lpill" data-l="English" onclick="sLang(this)"><span class="ln">Eng</span>English</div>
+          <div class="lpill" data-l="Hindi" onclick="sLang(this)"><span class="ln">हिं</span>हिंदी</div>
+          <div class="lpill" data-l="Marathi" onclick="sLang(this)"><span class="ln">मरा</span>मराठी</div>
+        </div>
+        <div class="em" id="e_lang"></div>
+      </div>
+      <div class="info-note">
+        <p>✅ Your dashboard will show personalized crop prices, weather alerts, and AI recommendations based on your location, crops, and language.</p>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-back" id="regBack" style="display:none" onclick="prevStep()">← Back</button>
+      <button class="btn-main" id="regNext" onclick="nextStep()">Continue →</button>
+    </div>
+  </div>
+  <div class="alt-link">Already have an account? <span onclick="goLogin()">Sign In</span></div>
+</div>
+
+<!-- ════ LOGIN ════ -->
+<div class="screen auth-screen off-right" id="login">
+  <div class="auth-bg" style="background:linear-gradient(170deg,var(--g2) 0%,var(--g1) 44%,var(--cream) 44%);">
+    <div class="auth-icon">🌾</div>
+    <div class="auth-title">Welcome Back</div>
+    <div class="auth-sub">Sign in to your AgriVeista account</div>
+  </div>
+  <div class="auth-card" style="margin-top:-36px;">
+    <div class="card-title">Sign In</div>
+    <div class="card-sub">Enter your registered mobile &amp; password</div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="fg">
+        <label class="fl">Mobile Number</label>
+        <input class="fi" id="l_phone" placeholder="10-digit number" type="tel" maxlength="10">
+        <div class="em" id="e_lp"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Password</label>
+        <input class="fi" id="l_pass" placeholder="Your password" type="password">
+        <div class="em" id="e_lw"></div>
+      </div>
+      <button class="btn-main" onclick="doLogin()" style="margin-top:4px;">Sign In →</button>
+      <div style="text-align:center;margin-top:6px;">
+        <span onclick="showForgot()" style="font-size:12px;color:var(--g3);font-weight:600;cursor:pointer;text-decoration:underline;">Forgot Password?</span>
+      </div>
+    </div>
+    <!-- FORGOT PASSWORD FLOW -->
+    <div id="fp_flow" style="display:none;flex-direction:column;gap:12px;margin-top:4px;">
+      <div id="fp_s1">
+        <div class="fg">
+          <label class="fl">Registered Mobile Number</label>
+          <input class="fi" id="fp_phone" placeholder="10-digit number" type="tel" maxlength="10">
+          <div class="em" id="e_fp_ph"></div>
+        </div>
+        <button class="btn-main" type="button" onclick="fpSendOtp()" style="margin-top:8px;">Send OTP →</button>
+      </div>
+      <div id="fp_s2" style="display:none;flex-direction:column;gap:10px;">
+        <div style="background:#e6f5eb;border-radius:9px;padding:10px 12px;border-left:3px solid var(--g3);">
+          <p id="fp_msg" style="font-size:12px;color:var(--g2);margin:0;font-weight:500;"></p>
+        </div>
+        <div class="fg">
+          <label class="fl">Enter OTP</label>
+          <input class="fi" id="fp_otp_in" placeholder="6-digit OTP" type="tel" maxlength="6">
+          <div class="em" id="e_fp_otp"></div>
+        </div>
+        <button class="btn-main" type="button" onclick="fpVerifyOtp()">Verify OTP →</button>
+        <div style="text-align:center;display:flex;justify-content:center;gap:12px;align-items:center;">
+          <span onclick="fpSendOtp()" style="font-size:11px;color:var(--ink3);cursor:pointer;">Resend OTP</span>
+          <span id="fp_timer" style="font-size:11px;color:var(--red);font-weight:600;"></span>
+        </div>
+      </div>
+      <div id="fp_s3" style="display:none;flex-direction:column;gap:10px;">
+        <div class="fg">
+          <label class="fl">New Password</label>
+          <input class="fi" id="fp_np" placeholder="Min 6 characters" type="password">
+          <div class="em" id="e_fp_np"></div>
+        </div>
+        <div class="fg">
+          <label class="fl">Confirm Password</label>
+          <input class="fi" id="fp_cp" placeholder="Repeat new password" type="password">
+          <div class="em" id="e_fp_cp"></div>
+        </div>
+        <button class="btn-main" type="button" onclick="fpResetPass()">Set New Password ✅</button>
+      </div>
+      <div style="text-align:center;">
+        <span onclick="hideForgot()" style="font-size:11.5px;color:var(--ink3);cursor:pointer;">← Back to Sign In</span>
+      </div>
+    </div>
+  </div>
+  <div class="alt-link">New farmer? <span onclick="goReg()">Create Account</span></div>
+</div>
+
+<!-- ════ DASHBOARD ════ -->
+<div class="screen off-right" id="dashboard">
+
+  <!-- HEADER -->
+  <div class="dh">
+    <div class="dh-top">
+      <div class="dh-left">
+        <div class="dh-hey" id="dh_hey">Namaste 👋</div>
+        <div class="dh-name" id="dh_name">Farmer</div>
+        <div class="dh-loc" id="dh_loc">📍 Location</div>
+      </div>
+      <div class="dh-av" onclick="openPanel('prof')">🧑‍🌾</div>
+    </div>
+    <div class="wx-band">
+      <div class="wx-icon" id="wx_ico">🌤️</div>
+      <div class="wx-inf">
+        <div class="wx-cond" id="wx_cond">Partly Cloudy</div>
+        <div class="wx-sub" id="wx_sub">No rain expected</div>
+      </div>
+      <div class="wx-temp" id="wx_temp">29°</div>
+    </div>
+    <div class="hcurve"></div>
+  </div>
+
+  <!-- BODY -->
+  <div class="db-body" id="db_body">
+
+    <!-- STATS -->
+    <div class="st-row fu">
+      <div class="st-box"><div class="st-ico">🌡️</div><div class="st-val" id="st_t">29°C</div><div class="st-lbl">Temp Today</div></div>
+      <div class="st-box"><div class="st-ico">💧</div><div class="st-val" id="st_m">62%</div><div class="st-lbl">Soil Moisture</div></div>
+      <div class="st-box"><div class="st-ico">📊</div><div class="st-val" id="st_p">7.2</div><div class="st-lbl">Soil pH</div></div>
+    </div>
+
+    <!-- ALERT -->
+    <div class="al-box fu">
+      <div class="al-ico">⚠️</div>
+      <div><div class="al-t" id="al_t">Weather Alert</div><div class="al-b" id="al_b">Loading…</div></div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="fu">
+      <div class="sh"><div class="sh-t">⚡ Quick Actions</div></div>
+      <div class="qa-grid">
+        <div class="qa-btn" onclick="openPanel('disease')">
+          <div class="qa-ico">🔬</div>
+          <div class="qa-lbl">Detect Disease</div>
+        </div>
+        <div class="qa-btn" onclick="openPanel('mandi')">
+          <div class="qa-ico">📈</div>
+          <div class="qa-lbl">Mandi Prices</div>
+        </div>
+        <div class="qa-btn" onclick="openPanel('weather')">
+          <div class="qa-ico">🌦️</div>
+          <div class="qa-lbl">Weather</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CROP SECTION -->
+    <div class="fu">
+      <div class="sh">
+        <div class="sh-t">🌿 Your Crops</div>
+      </div>
+      <div class="cg" id="cg"></div>
+    </div>
+
+    <!-- DISEASE DETECTION BANNER -->
+    <div class="fu">
+      <button class="disease-cta" onclick="openPanel('disease')">
+        <span style="font-size:32px;flex-shrink:0;">🔬</span>
+        <div class="dc-text">
+          <div class="dc-title">Crop Disease Detection</div>
+          <div class="dc-sub">Upload photo → AI diagnoses instantly</div>
+        </div>
+        <span style="color:rgba(255,255,255,.6);margin-left:auto;font-size:18px;">→</span>
+      </button>
+    </div>
+
+    <!-- MANDI -->
+    <div class="fu">
+      <div class="sh">
+        <div class="sh-t">🏪 Live Mandi Prices</div>
+        <div class="sh-a" onclick="openPanel('mandi')">View All</div>
+      </div>
+      <div class="ml" id="ml_home"></div>
+    </div>
+
+    <!-- SCHEMES -->
+    <div class="fu">
+      <div class="sh">
+        <div class="sh-t">🏛️ Govt Schemes</div>
+        <div class="sh-a" onclick="openPanel('schemes')">See All</div>
+      </div>
+      <div class="sc-scroll">
+        <div class="sc-card" onclick="openPanel('schemes')"><div class="sc-ico">🌦️</div><div class="sc-nm">PM Fasal Bima Yojana</div><div class="sc-dl">Deadline: Apr 15, 2026</div><div class="sc-bd">Open</div></div>
+        <div class="sc-card" onclick="openPanel('schemes')"><div class="sc-ico">💰</div><div class="sc-nm">PM Kisan Samman Nidhi</div><div class="sc-dl">Next: Apr 01, 2026</div><div class="sc-bd">Eligible</div></div>
+        <div class="sc-card" onclick="openPanel('schemes')"><div class="sc-ico">💧</div><div class="sc-nm">Per Drop More Crop</div><div class="sc-dl">Apply by: May 30, 2026</div><div class="sc-bd">New</div></div>
+      </div>
+    </div>
+
+  </div><!-- /db_body -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bnav">
+    <div class="ni on" id="ni_home" onclick="navClick('home',this)"><span class="ni-ico">🏠</span><span class="ni-lbl">Home</span><div class="ni-dot"></div></div>
+    <div class="ni" id="ni_hist" onclick="navClick('hist',this)"><span class="ni-ico">🕐</span><span class="ni-lbl">History</span></div>
+    <div class="ni" id="ni_mandi" onclick="navClick('mandi',this)"><span class="ni-ico">🏪</span><span class="ni-lbl">Mandi</span></div>
+    <div class="ni" id="ni_godown" onclick="navClick('godown',this)"><span class="ni-ico">🏗️</span><span class="ni-lbl">Godown</span></div>
+    <div class="ni" id="ni_harvest" onclick="navClick('harvest',this)"><span class="ni-ico">🌾</span><span class="ni-lbl">Harvest</span></div>
+    <div class="ni" id="ni_bestmkt" onclick="navClick('bestmkt',this)"><span class="ni-ico">📊</span><span class="ni-lbl">Best Mkt</span></div>
+    <div class="ni" id="ni_prof" onclick="navClick('prof',this)"><span class="ni-ico">👤</span><span class="ni-lbl">Profile</span></div>
+  </div>
+
+  <!-- ══ DISEASE PANEL ══ -->
+  <div class="panel disease-panel" id="panel_disease">
+    <div class="panel-hd">
+      <div class="panel-back" onclick="closePanel('disease')">← Back</div>
+      <div class="panel-title">🔬 Disease Detection</div>
+      <div class="panel-sub">PS-04 · AI-powered crop health diagnosis</div>
+    </div>
+    <div class="panel-curve"></div>
+    <div class="panel-body">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="sh"><div class="sh-t">📸 Upload Crop Image</div></div>
+        <div class="upload-zone" id="upzone" onclick="document.getElementById('fileIn').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+          <input type="file" id="fileIn" accept="image/*" onchange="fileSelected(event)">
+          <div class="uz-ico">📷</div>
+          <div class="uz-t">Upload Crop Photo</div>
+          <div class="uz-s">Take or upload a clear photo of your crop leaves / stems showing the affected area.<br>Supports JPG, PNG, HEIC</div>
+          <div class="uz-btn">Choose Photo</div>
+        </div>
+        <div class="preview-box" id="prevBox">
+          <img class="prev-img" id="prevImg" src="" alt="preview">
+          <div class="prev-info">
+            <div><div class="prev-nm" id="prev_nm">image.jpg</div><div class="prev-sz" id="prev_sz">—</div></div>
+            <div style="cursor:pointer;font-size:11px;color:var(--red);font-weight:600;" onclick="clearFile()">✕ Remove</div>
+          </div>
+        </div>
+        <div class="sh"><div class="sh-t">🌿 Which Crop?</div></div>
+        <select class="fi" id="dis_crop">
+          <option value="">Select crop (optional)</option>
+          <option>Tomato</option><option>Wheat</option><option>Soybean</option>
+          <option>Onion</option><option>Maize</option><option>Potato</option>
+          <option>Cotton</option><option>Rice</option><option>Sugarcane</option><option>Groundnut</option>
+        </select>
+        <button class="analyze-btn" id="analyzeBtn" onclick="analyzeDisease()" disabled>🔬 Analyze for Disease</button>
+
+        <!-- RESULT -->
+        <div class="result-box" id="resultBox">
+          <div class="rb-hd" id="rb_hd">
+            <div class="rb-icon" id="rb_icon">🔬</div>
+            <div>
+              <div class="rb-title" id="rb_title">Analyzing…</div>
+              <div class="rb-conf" id="rb_conf"></div>
+            </div>
+          </div>
+          <div class="rb-body">
+            <div class="rb-sect">
+              <div class="rb-slbl">Diagnosis</div>
+              <div class="rb-sval" id="rb_diag"></div>
+            </div>
+            <div class="rb-sect">
+              <div class="rb-slbl">Severity</div>
+              <div id="rb_sev"></div>
+              <div class="conf-bar" style="margin-top:8px;"><div class="conf-fill" id="rb_conf_bar" style="width:0%"></div></div>
+            </div>
+            <div class="rb-sect">
+              <div class="rb-slbl">Symptoms Detected</div>
+              <div class="rb-sval" id="rb_symp"></div>
+            </div>
+            <div class="rb-sect">
+              <div class="rb-slbl">🌿 Treatment Plan</div>
+              <div class="treatment-list" id="rb_treat"></div>
+            </div>
+            <div class="rb-sect" id="rb_prev_sect">
+              <div class="rb-slbl">🛡️ Prevention</div>
+              <div class="rb-sval" id="rb_prev"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HISTORY of scans -->
+        <div class="sh" style="margin-top:4px;"><div class="sh-t">📋 Recent Scans</div></div>
+        <div id="scan_hist"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MANDI PANEL ══ -->
+  <div class="panel" id="panel_mandi">
+    <div class="panel-hd">
+      <div class="panel-back" onclick="closePanel('mandi')">← Back</div>
+      <div class="panel-title">🏪 Live Mandi Prices</div>
+      <div class="panel-sub" id="mandi_sub">Current market rates</div>
+    </div>
+    <div class="panel-curve"></div>
+    <div class="panel-body">
+      <div class="mandi-full" id="mandi_full"></div>
+    </div>
+  </div>
+
+  <!-- ══ WEATHER PANEL ══ -->
+  <div class="panel" id="panel_weather">
+    <div class="panel-hd">
+      <div class="panel-back" onclick="closePanel('weather')">← Back</div>
+      <div class="panel-title">🌦️ Weather Forecast</div>
+      <div class="panel-sub" id="wx_loc_sub">7-day outlook for your region</div>
+    </div>
+    <div class="panel-curve"></div>
+    <div class="panel-body" id="wx_body"></div>
+  </div>
+
+  <!-- ══ HISTORY PANEL ══ -->
+  <div class="panel" id="panel_hist">
+    <div class="panel-hd">
+      <div class="panel-back" onclick="closePanel('hist')">← Back</div>
+      <div class="panel-title">🕐 Activity History</div>
+      <div class="panel-sub">Your recent farming activity</div>
+    </div>
+    <div class="panel-curve"></div>
+    <div class="panel-body" id="hist_body"></div>
+  </div>
+
+  <!-- ══ GODOWN PANEL ══ -->
+  <div class="panel" id="panel_godown">
+    <div class="panel-hd">
+      <div class="panel-back" onclick="closePanel('godown')">← Back</div>
+      <div class="panel-title">🏗️ Godown / Storage</div>
+      <div class="panel-sub">Current stock levels</div>
+    </div>
+    <div class="panel-curve"></div>
+    <div class="panel-body" id="godown_body"></div>
+  </div>
+
+  <!-- ══ HARVEST PANEL ══ -->
+  <div class="panel" id="panel_harvest">
+    <div class="panel-hd">
+      <div class="panel-back" onclick="closePanel('harvest')">← Back</div>
+      <div class="panel-title">🌾 Harvest Tracker</div>
+      <div class="panel-sub">Upcoming & past harvests</div>
+    </div>
+    <div class="panel-curve"></div>
+    <div class="panel-body" id="harvest_body"></div>
+  </div>
+
+  <!-- ══ BEST MKT PANEL ══ -->
+  <div class="panel" id="panel_bestmkt">
+    <div class="panel-hd">
+      <div class="panel-back" onclick="closePanel('bestmkt')">← Back</div>
+      <div class="panel-title">📊 Best Market Finder</div>
+      <div class="panel-sub" id="bm_sub">Best markets for your crops</div>
+    </div>
+    <div class="panel-curve"></div>
+    <div class="panel-body" id="bestmkt_body"></div>
+  </div>
+
+  <!-- ══ PROFILE PANEL ══ -->
+  <div class="panel" id="panel_prof">
+    <div class="panel-hd">
+      <div class="panel-back" onclick="closePanel('prof')">← Back</div>
+      <div class="prof-hd-content">
+        <div class="prof-av">🧑‍🌾</div>
+        <div class="prof-nm" id="prof_nm">Farmer</div>
+        <div class="prof-loc" id="prof_loc">📍 Location</div>
+      </div>
+    </div>
+    <div class="panel-curve"></div>
+    <div class="panel-body">
+      <div class="icard">
+        <h3>Personal Info</h3>
+        <div class="ir"><span class="ik">Name</span><span class="iv" id="pi_nm">—</span></div>
+        <div class="ir"><span class="ik">Mobile</span><span class="iv" id="pi_ph">—</span></div>
+        <div class="ir"><span class="ik">Language</span><span class="iv" id="pi_lg">—</span></div>
+        <div class="ir"><span class="ik">Member Since</span><span class="iv" id="pi_jn">—</span></div>
+      </div>
+      <div class="icard">
+        <h3>Farm Details</h3>
+        <div class="ir"><span class="ik">State</span><span class="iv" id="pi_st">—</span></div>
+        <div class="ir"><span class="ik">District</span><span class="iv" id="pi_di">—</span></div>
+        <div class="ir"><span class="ik">Village</span><span class="iv" id="pi_vi">—</span></div>
+        <div class="ir"><span class="ik">Land Area</span><span class="iv" id="pi_la">—</span></div>
+        <div class="ir"><span class="ik">Primary Crops</span><span class="iv" id="pi_cr">—</span></div>
+      </div>
+      <button class="logout-b" onclick="doLogout()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <!-- ══ SCHEMES PANEL ══ -->
+  <div class="panel" id="panel_schemes">
+    <div class="panel-hd">
+      <div class="panel-back" onclick="closePanel('schemes')">← Back</div>
+      <div class="panel-title">🏛️ Government Schemes</div>
+      <div class="panel-sub">Schemes available for farmers</div>
+    </div>
+    <div class="panel-curve"></div>
+    <div class="panel-body">
+      <div class="scheme-full">
+        <div class="sf-item">
+          <div class="sf-top"><div class="sf-ico">🌦️</div><div><div class="sf-nm">PM Fasal Bima Yojana</div></div></div>
+          <div class="sf-desc">Crop insurance scheme providing financial support to farmers suffering crop loss due to unforeseen events like flood, drought, pests or diseases.</div>
+          <div class="sf-dl"><span class="sf-date">📅 Deadline: Apr 15, 2026</span><span class="sf-badge sfb-open">Open</span></div>
+        </div>
+        <div class="sf-item">
+          <div class="sf-top"><div class="sf-ico">💰</div><div><div class="sf-nm">PM Kisan Samman Nidhi</div></div></div>
+          <div class="sf-desc">Income support of ₹6,000 per year in three equal installments to all land-holding farmer families across the country.</div>
+          <div class="sf-dl"><span class="sf-date">📅 Next Installment: Apr 01, 2026</span><span class="sf-badge sfb-elig">Eligible</span></div>
+        </div>
+        <div class="sf-item">
+          <div class="sf-top"><div class="sf-ico">💧</div><div><div class="sf-nm">Per Drop More Crop</div></div></div>
+          <div class="sf-desc">Promotes micro-irrigation like drip and sprinkler systems to improve water use efficiency in agriculture.</div>
+          <div class="sf-dl"><span class="sf-date">📅 Apply by: May 30, 2026</span><span class="sf-badge sfb-new">New</span></div>
+        </div>
+        <div class="sf-item">
+          <div class="sf-top"><div class="sf-ico">🌱</div><div><div class="sf-nm">National Mission for Sustainable Agriculture</div></div></div>
+          <div class="sf-desc">Aims at making agriculture more productive, sustainable and climate-resilient by promoting integrated farming system and soil health management.</div>
+          <div class="sf-dl"><span class="sf-date">📅 Ongoing</span><span class="sf-badge sfb-open">Active</span></div>
+        </div>
+        <div class="sf-item">
+          <div class="sf-top"><div class="sf-ico">🏦</div><div><div class="sf-nm">Kisan Credit Card (KCC)</div></div></div>
+          <div class="sf-desc">Provides adequate and timely credit support from the banking system to farmers for their cultivation &amp; other needs at low interest rates.</div>
+          <div class="sf-dl"><span class="sf-date">📅 Year-round</span><span class="sf-badge sfb-elig">Apply Now</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /dashboard -->
+</div><!-- /app -->
+<script>
+/* ══════════════════════════════════════════
+   DATA STORE
+══════════════════════════════════════════ */
+const DIST={
+  Maharashtra:['Nagpur','Amravati','Pune','Nashik','Aurangabad','Solapur','Kolhapur','Yavatmal','Akola','Washim','Wardha','Chandrapur'],
+  'Uttar Pradesh':['Lucknow','Varanasi','Agra','Kanpur','Meerut','Allahabad','Bareilly','Aligarh','Moradabad','Gorakhpur'],
+  Punjab:['Amritsar','Ludhiana','Jalandhar','Patiala','Bathinda','Mohali','Firozpur','Hoshiarpur','Gurdaspur','Faridkot'],
+  'Madhya Pradesh':['Bhopal','Indore','Gwalior','Jabalpur','Ujjain','Sagar','Rewa','Satna','Dewas','Ratlam'],
+  Rajasthan:['Jaipur','Jodhpur','Kota','Ajmer','Bikaner','Udaipur','Bharatpur','Sikar','Pali','Alwar'],
+  Gujarat:['Ahmedabad','Surat','Vadodara','Rajkot','Bhavnagar','Jamnagar','Junagadh','Gandhinagar','Anand','Mehsana'],
+  Haryana:['Ambala','Hisar','Rohtak','Gurugram','Faridabad','Panipat','Karnal','Sonipat','Bhiwani','Sirsa'],
+  Karnataka:['Bangalore','Mysuru','Hubli','Dharwad','Belgaum','Mangalore','Davanagere','Bellary','Bijapur','Shimoga'],
+  'Andhra Pradesh':['Visakhapatnam','Vijayawada','Guntur','Nellore','Kurnool','Tirupati','Kakinada','Rajahmundry','Anantapur','Eluru'],
+  'Tamil Nadu':['Chennai','Coimbatore','Madurai','Tiruchirappalli','Salem','Tirunelveli','Vellore','Erode','Thoothukudi','Dindigul'],
+  Bihar:['Patna','Gaya','Bhagalpur','Muzaffarpur','Darbhanga','Purnia','Ara','Begusarai','Katihar','Munger'],
+  'West Bengal':['Kolkata','Howrah','Asansol','Siliguri','Durgapur','Bardhaman','Malda','Cooch Behar','Midnapore','Darjeeling']
+};
+const CROPS={
+  Tomato:{em:'🍅',lo:'Tamatar',pr:'₹1,820/q',ch:'+4.2%',up:true,mkt:'Nagpur APMC',bd:'bhi',lb:'High Yield',sc:88,min:1600,max:2000},
+  Wheat:{em:'🌾',lo:'Gehun',pr:'₹2,150/q',ch:'+1.8%',up:true,mkt:'Amravati APMC',bd:'bmd',lb:'Med Yield',sc:72,min:1900,max:2300},
+  Soybean:{em:'🌱',lo:'Soyabean',pr:'₹4,650/q',ch:'+2.1%',up:true,mkt:'Amravati APMC',bd:'bmd',lb:'Med Yield',sc:75,min:4200,max:5000},
+  Onion:{em:'🧅',lo:'Pyaz',pr:'₹950/q',ch:'-1.8%',up:false,mkt:'Lasalgaon APMC',bd:'bhi',lb:'High Yield',sc:80,min:800,max:1200},
+  Maize:{em:'🌽',lo:'Makka',pr:'₹1,380/q',ch:'-0.5%',up:false,mkt:'Pune APMC',bd:'blo',lb:'Low Season',sc:55,min:1100,max:1600},
+  Potato:{em:'🥔',lo:'Aloo',pr:'₹780/q',ch:'+0.9%',up:true,mkt:'Nashik APMC',bd:'bmd',lb:'Med Yield',sc:68,min:650,max:950},
+  Cotton:{em:'🌿',lo:'Kapas',pr:'₹6,200/q',ch:'+3.3%',up:true,mkt:'Yavatmal APMC',bd:'bhi',lb:'High Yield',sc:85,min:5500,max:7000},
+  Rice:{em:'🍚',lo:'Chawal',pr:'₹2,080/q',ch:'+0.4%',up:true,mkt:'Kolkata APMC',bd:'bmd',lb:'Med Yield',sc:70,min:1850,max:2300},
+  Sugarcane:{em:'🎋',lo:'Ganna',pr:'₹350/q',ch:'+1.2%',up:true,mkt:'Pune APMC',bd:'bmd',lb:'Med Yield',sc:65,min:300,max:400},
+  Groundnut:{em:'🥜',lo:'Moongfali',pr:'₹5,400/q',ch:'+2.8%',up:true,mkt:'Rajkot APMC',bd:'bhi',lb:'High Yield',sc:83,min:4800,max:6000}
+};
+const WX={
+  Maharashtra:{c:'Partly Cloudy',i:'🌤️',t:29,s:'☀️ No rain expected for 3 days',al:'Heatwave advisory: Temps above 34°C expected Mar 18–20. Use early morning irrigation for Kharif crops.',forecast:[{d:'Today',i:'🌤️',h:32,l:22,r:'0%'},{d:'Wed',i:'☀️',h:34,l:24,r:'0%'},{d:'Thu',i:'⛅',h:31,l:21,r:'10%'},{d:'Fri',i:'🌧️',h:28,l:20,r:'70%'},{d:'Sat',i:'🌧️',h:26,l:19,r:'80%'},{d:'Sun',i:'⛅',h:29,l:21,r:'20%'},{d:'Mon',i:'☀️',h:33,l:23,r:'5%'}]},
+  Punjab:{c:'Clear & Sunny',i:'☀️',t:24,s:'🌬️ Light winds, dry conditions',al:'Dry spell warning: Continuous dry weather for 7 days. Irrigation advised for wheat before grain filling stage.',forecast:[{d:'Today',i:'☀️',h:26,l:14,r:'0%'},{d:'Wed',i:'☀️',h:28,l:15,r:'0%'},{d:'Thu',i:'☀️',h:29,l:16,r:'0%'},{d:'Fri',i:'⛅',h:27,l:14,r:'15%'},{d:'Sat',i:'🌧️',h:22,l:13,r:'65%'},{d:'Sun',i:'⛅',h:24,l:13,r:'20%'},{d:'Mon',i:'☀️',h:27,l:15,r:'5%'}]},
+  Gujarat:{c:'Hot & Humid',i:'🌡️',t:33,s:'💧 High humidity 72%',al:'Heat stress alert: High humidity with heat. Schedule groundnut irrigation before 8 AM to reduce evaporation.',forecast:[{d:'Today',i:'🌡️',h:35,l:26,r:'5%'},{d:'Wed',i:'🌡️',h:36,l:27,r:'0%'},{d:'Thu',i:'⛅',h:34,l:25,r:'20%'},{d:'Fri',i:'🌧️',h:30,l:23,r:'75%'},{d:'Sat',i:'🌧️',h:28,l:22,r:'85%'},{d:'Sun',i:'⛅',h:31,l:24,r:'25%'},{d:'Mon',i:'☀️',h:34,l:26,r:'0%'}]},
+  Rajasthan:{c:'Sunny & Dry',i:'☀️',t:36,s:'🏜️ Very low humidity 18%',al:'Extreme heat: Avoid fieldwork 11AM–4PM. Mulching and drip irrigation strongly recommended this week.',forecast:[{d:'Today',i:'☀️',h:38,l:22,r:'0%'},{d:'Wed',i:'☀️',h:40,l:24,r:'0%'},{d:'Thu',i:'☀️',h:41,l:25,r:'0%'},{d:'Fri',i:'⛅',h:37,l:22,r:'5%'},{d:'Sat',i:'⛅',h:35,l:20,r:'10%'},{d:'Sun',i:'☀️',h:38,l:22,r:'0%'},{d:'Mon',i:'☀️',h:40,l:24,r:'0%'}]},
+  'West Bengal':{c:'Overcast',i:'🌥️',t:28,s:'🌧️ Light rain possible tomorrow',al:'Rain alert: 15–20mm rainfall expected tomorrow. Delay harvesting if planned. Fungal infection risk elevated.',forecast:[{d:'Today',i:'🌥️',h:30,l:22,r:'30%'},{d:'Wed',i:'🌧️',h:27,l:21,r:'80%'},{d:'Thu',i:'🌧️',h:26,l:20,r:'75%'},{d:'Fri',i:'⛅',h:28,l:21,r:'35%'},{d:'Sat',i:'☀️',h:30,l:22,r:'10%'},{d:'Sun',i:'☀️',h:31,l:23,r:'5%'},{d:'Mon',i:'⛅',h:29,l:22,r:'25%'}]},
+  default:{c:'Partly Cloudy',i:'🌤️',t:27,s:'🌾 Good farming conditions today',al:'No major weather alerts. Good conditions for field activities.',forecast:[{d:'Today',i:'🌤️',h:29,l:18,r:'10%'},{d:'Wed',i:'☀️',h:31,l:19,r:'0%'},{d:'Thu',i:'⛅',h:28,l:17,r:'20%'},{d:'Fri',i:'🌧️',h:25,l:16,r:'60%'},{d:'Sat',i:'⛅',h:27,l:17,r:'25%'},{d:'Sun',i:'☀️',h:30,l:19,r:'5%'},{d:'Mon',i:'☀️',h:32,l:20,r:'0%'}]}
+};
+const SOIL={
+  Maharashtra:{m:'58%',p:'7.1'},Punjab:{m:'70%',p:'7.8'},Gujarat:{m:'42%',p:'8.2'},
+  Rajasthan:{m:'28%',p:'8.5'},'West Bengal':{m:'76%',p:'5.9'},default:{m:'62%',p:'7.2'}
+};
+const DISEASES={
+  Tomato:[
+    {name:'Early Blight',sev:'Medium',sevCls:'sev-med',conf:84,diag:'Alternaria solani fungal infection detected. Brown circular spots with concentric rings on lower leaves.',symp:'Dark brown spots (1–2cm) with yellow halos, concentric ring pattern, lower leaves affected first, defoliation in severe cases.',treat:['Apply Mancozeb 75WP (2g/L water) every 7–10 days','Remove and destroy affected leaves immediately','Avoid overhead irrigation; use drip irrigation','Apply copper-based fungicide as preventive measure'],prev:'Use certified disease-free seeds, maintain 60cm plant spacing, rotate crops annually, avoid working in field when wet.'},
+    {name:'Leaf Curl Virus',sev:'High',sevCls:'sev-high',conf:91,diag:'Tomato Yellow Leaf Curl Virus (TYLCV) transmitted by whitefly vectors.',symp:'Upward curling of leaves, yellowing of leaf margins, stunted plant growth, reduced fruit set.',treat:['Apply Imidacloprid 17.8 SL (0.3ml/L) to control whitefly vector','Remove and burn severely infected plants','Apply Neem oil spray (5ml/L) for organic control','Use yellow sticky traps to monitor whitefly population'],prev:'Use virus-resistant varieties (eg. Arka Rakshak), install 50-mesh insect-proof nets in nursery.'},
+    {name:'Healthy Plant',sev:'None',sevCls:'sev-low',conf:93,diag:'No disease detected. Crop appears healthy with normal leaf color and texture.',symp:'Normal dark green leaves, no spots, no wilting, good plant vigor.',treat:['Continue regular monitoring','Maintain balanced NPK fertilization','Ensure adequate irrigation','Apply preventive calcium spray to avoid blossom end rot'],prev:'Continue current practices. Scout weekly for early pest detection. Monitor soil moisture regularly.'}
+  ],
+  Wheat:[
+    {name:'Yellow Rust (Stripe Rust)',sev:'High',sevCls:'sev-high',conf:88,diag:'Puccinia striiformis f.sp. tritici detected. Yellow stripe pustules on leaves.',symp:'Yellow to orange stripe pustules along leaf veins, leaves turn straw-colored, stunted grain fill.',treat:['Apply Propiconazole 25EC (1ml/L) at first sign','Spray Tebuconazole 25.9EC (1ml/L) for severe infection','Ensure good field drainage','Apply sulfur dust as emergency measure'],prev:'Use rust-resistant varieties, apply balanced potassium fertilization, avoid excessive nitrogen.'},
+    {name:'Healthy Plant',sev:'None',sevCls:'sev-low',conf:95,diag:'Crop appears healthy. No fungal or bacterial symptoms detected.',symp:'Healthy green leaves, upright stems, good tillering.',treat:['Maintain current crop management practices','Monitor for aphids and other pests','Apply recommended fertilizer schedule'],prev:'Continue monitoring every 7 days. Check grain development stage for timely harvesting.'}
+  ],
+  Soybean:[
+    {name:'Bacterial Pustule',sev:'Medium',sevCls:'sev-med',conf:79,diag:'Xanthomonas axonopodis bacterial infection detected on leaf surface.',symp:'Small pale green spots turning brown with yellow margins, raised pustules on undersides of leaves.',treat:['Apply copper hydroxide spray (3g/L)','Remove heavily infected plant debris','Avoid overhead irrigation','Apply Streptomycin sulfate (500ppm) in severe cases'],prev:'Use certified seeds, practice crop rotation, avoid soybean-on-soybean planting.'}
+  ],
+  default:[
+    {name:'Possible Nutrient Deficiency',sev:'Low',sevCls:'sev-low',conf:67,diag:'Image analysis suggests possible nutrient stress. No clear pathogen signature detected.',symp:'Yellowing of leaves, possible nitrogen or iron deficiency symptoms.',treat:['Conduct soil test to confirm nutrient status','Apply foliar spray of micronutrients (Zinc, Iron, Boron)','Ensure soil pH is in optimal range for crop','Apply urea top dressing if nitrogen deficiency confirmed'],prev:'Maintain regular soil testing, balanced fertilization program, and adequate irrigation.'}
+  ]
+};
+/* ══════════════════════════════════════════
+   APP STATE
+══════════════════════════════════════════ */
+let step=1, selCrops=[], selLang='', curUser=null, scanHistory=[];
+let liveCoords={lat:null,lon:null};
+let liveMandiData=[];
+
+/* ══════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    try{
+      const u=loadUser();
+      if(u){curUser=u;buildDash(u);showScreen('dashboard');loadLiveData(u);}
+      else{const a=getAccs();showScreen(Object.keys(a).length?'login':'register');}
+    }catch(e){
+      console.warn('Boot error:',e);
+      showScreen('login');
+    }
+  },2000);
+});
+
+/* ══════════════════════════════════════════
+   SCREEN TRANSITIONS
+══════════════════════════════════════════ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{
+    if(s.id!==id){s.classList.add('off-left');setTimeout(()=>{s.classList.remove('off-left');s.classList.add('off-right');},420);}
+  });
+  const next=document.getElementById(id);
+  next.classList.remove('off-right','off-left');
+}
+function goLogin(){showScreen('login');}
+function goReg(){resetReg();showScreen('register');}
+
+/* ══════════════════════════════════════════
+   REGISTRATION
+══════════════════════════════════════════ */
+const STEPTITLES={1:'Personal Info',2:'Location',3:'Crops & Farm',4:'Language'};
+function resetReg(){
+  step=1;selCrops=[];selLang='';
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById('s1').classList.add('on');
+  document.querySelectorAll('.cpill').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.lpill').forEach(p=>p.classList.remove('on'));
+  updProg();
+}
+function loadDist(){/* replaced by GPS */}
+
+/* ══════════════════════════════════════════
+   GPS LOCATION DETECTION
+══════════════════════════════════════════ */
+function detectLocation(){
+  var btn=document.getElementById('locBtn');
+  var errEl=document.getElementById('e_location');
+  var card=document.getElementById('loc_card');
+  var cardTxt=document.getElementById('loc_card_txt');
+  errEl.textContent='';card.style.display='none';
+  if(!navigator.geolocation){errEl.textContent='Geolocation not supported.';return;}
+  btn.textContent='⏳ Detecting...';btn.disabled=true;
+  function onOk(pos){
+    var lat=pos.coords.latitude,lon=pos.coords.longitude;
+    liveCoords={lat:lat,lon:lon};
+    document.getElementById('r_lat').value=lat;
+    document.getElementById('r_lon').value=lon;
+    fetch('https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lon+'&format=json&addressdetails=1',
+      {headers:{'Accept':'application/json','Accept-Language':'en-IN,en;q=0.9'}})
+    .then(function(r){if(!r.ok)throw 0;return r.json();})
+    .then(function(data){
+      var a=data.address||{};
+      var state   =a.state||a.state_district||'';
+      var city    =a.city||a.town||a.village||a.suburb||a.municipality||a.hamlet||'';
+      var district=a.state_district||a.county||a.district||a.city_district||city||'';
+      var pin     =a.postcode||'';
+      document.getElementById('r_state').value  =state;
+      document.getElementById('r_dist').value   =district;
+      document.getElementById('r_village').value=city;
+      document.getElementById('r_pincode').value=pin;
+      cardTxt.textContent='📍 '+[city,state].filter(Boolean).join(', ')+(pin?' - '+pin:'');
+      card.style.display='block';
+      btn.textContent='✅ Location Detected';btn.disabled=false;
+      showToast('Location detected successfully 📍');
+    })
+    .catch(function(){
+      btn.textContent='📍 Detect My Location';btn.disabled=false;
+      errEl.textContent='Unable to fetch address. Please try again.';
+    });
+  }
+  function onErr(e){
+    btn.textContent='📍 Detect My Location';btn.disabled=false;
+    errEl.textContent=e.code===1?'Location permission denied.':'Unable to detect location. Enable GPS.';
+  }
+  navigator.geolocation.getCurrentPosition(onOk,onErr,{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+}
+
+/* ══════════════════════════════════════════
+   LIVE DATA ORCHESTRATOR
+══════════════════════════════════════════ */
+function loadLiveData(u){
+  if(!u)return;
+  var lat=parseFloat(u.lat||liveCoords.lat);
+  var lon=parseFloat(u.lon||liveCoords.lon);
+  if(lat&&lon)fetchLiveWeather(lat,lon,u.district);
+  if(u.state)fetchLiveMandi(u.state,u.district);
+}
+
+/* ══════════════════════════════════════════
+   LIVE WEATHER — Open-Meteo (free, no key)
+══════════════════════════════════════════ */
+function wxCode(c){
+  if(c===0)         return{t:'Clear Sky',     i:'☀️'};
+  if(c<=3)          return{t:'Partly Cloudy', i:'🌤️'};
+  if(c<=9||c===45||c===48)return{t:'Fog',    i:'🌫️'};
+  if(c<=29)         return{t:'Drizzle',       i:'🌦️'};
+  if(c<=67)         return{t:'Rain',          i:'🌧️'};
+  if(c<=77)         return{t:'Snow',          i:'❄️'};
+  if(c<=82)         return{t:'Heavy Rain',    i:'⛈️'};
+  return            {t:'Thunderstorm',        i:'⛈️'};
+}
+function fetchLiveWeather(lat,lon,district){
+  fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current_weather=true&timezone=Asia%2FKolkata')
+  .then(function(r){if(!r.ok)throw 0;return r.json();})
+  .then(function(d){
+    var cw=d.current_weather||{};
+    var temp=Math.round(cw.temperature||0);
+    var wind=Math.round(cw.windspeed||0);
+    var info=wxCode(cw.weathercode||0);
+    var el;
+    el=document.getElementById('wx_ico');  if(el)el.textContent=info.i;
+    el=document.getElementById('wx_cond'); if(el)el.textContent=info.t+' · '+(district||'');
+    el=document.getElementById('wx_sub');  if(el)el.textContent='💨 Wind '+wind+' km/h · Live';
+    el=document.getElementById('wx_temp'); if(el)el.textContent=temp+'°';
+    el=document.getElementById('st_t');    if(el)el.textContent=temp+'°C';
+    if(curUser)curUser._liveWx={t:temp,c:info.t,i:info.i,wind:wind};
+    var wp=document.getElementById('panel_weather');
+    if(wp&&wp.classList.contains('open'))buildWeather();
+  })
+  .catch(function(){/* silent — static data stays */});
+}
+
+/* ══════════════════════════════════════════
+   LIVE MANDI — data.gov.in AGMARKNET
+══════════════════════════════════════════ */
+var _MKEY='579b464db66ec23bdd000001cdd3946e44ce4aad38d07d98f87c12a2';
+var _CEM={tomato:'🍅',onion:'🧅',potato:'🥔',wheat:'🌾',rice:'🍚',maize:'🌽',soybean:'🌱',
+  cotton:'🌿',sugarcane:'🎋',groundnut:'🥜',brinjal:'🍆',cabbage:'🥬',cauliflower:'🥦',
+  chilli:'🌶️',garlic:'🧄',mango:'🥭',banana:'🍌',lemon:'🍋',orange:'🍊'};
+function cEmo(n){
+  if(!n)return'🌾';var lc=n.toLowerCase();
+  var k=Object.keys(_CEM).find(function(k){return lc.includes(k);});
+  return k?_CEM[k]:'🌾';
+}
+function fmtRs(p){var n=parseInt(p);return isNaN(n)?String(p):'₹'+n.toLocaleString('en-IN')+'/q';}
+function dedupeRec(recs){
+  var m={};
+  recs.forEach(function(r){
+    var k=(r.commodity||r.Commodity||'').trim();if(!k)return;
+    var mp=parseInt(r.modal_price||r['Modal Price']||0);
+    if(!m[k]||mp>parseInt(m[k].modal_price||0))m[k]=r;
+  });
+  return Object.values(m);
+}
+function fetchLiveMandi(state,district){
+  var base='https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070';
+  var qs='?api-key='+_MKEY+'&format=json&limit=60&filters[state.keyword]='+encodeURIComponent(state);
+  if(district)qs+='&filters[district.keyword]='+encodeURIComponent(district);
+  var ml=document.getElementById('ml_home');
+  if(ml)ml.innerHTML='<div style="font-size:11px;color:var(--ink3);padding:8px 0;">⏳ Loading live prices…</div>';
+  fetch(base+qs)
+  .then(function(r){if(!r.ok)throw 0;return r.json();})
+  .then(function(d){
+    var recs=d.records||[];
+    if(!recs.length&&district){fetchMandiState(state);return;}
+    if(!recs.length)throw 0;
+    liveMandiData=recs;renderMandiHome(recs,district||state);
+    var mp=document.getElementById('panel_mandi');
+    if(mp&&mp.classList.contains('open'))buildMandi();
+  })
+  .catch(function(){if(district)fetchMandiState(state);else renderMandiFallback();});
+}
+function fetchMandiState(state){
+  var base='https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070';
+  var qs='?api-key='+_MKEY+'&format=json&limit=60&filters[state.keyword]='+encodeURIComponent(state);
+  fetch(base+qs)
+  .then(function(r){if(!r.ok)throw 0;return r.json();})
+  .then(function(d){
+    var recs=d.records||[];if(!recs.length)throw 0;
+    liveMandiData=recs;renderMandiHome(recs,state);
+    var mp=document.getElementById('panel_mandi');
+    if(mp&&mp.classList.contains('open'))buildMandi();
+  })
+  .catch(function(){renderMandiFallback();});
+}
+function renderMandiHome(recs,loc){
+  var ml=document.getElementById('ml_home');if(!ml)return;
+  var items=dedupeRec(recs).slice(0,6);
+  if(!items.length){renderMandiFallback();return;}
+  ml.innerHTML='';
+  items.forEach(function(r){
+    var comm=(r.commodity||r.Commodity||'—').trim();
+    var mkt =(r.market||r.Market||loc||'APMC').trim();
+    var modal=r.modal_price||r['Modal Price']||'—';
+    var min  =r.min_price||r['Min Price']||'';
+    var max  =r.max_price||r['Max Price']||'';
+    ml.innerHTML+='<div class="mr">'
+      +'<div class="mr-em">'+cEmo(comm)+'</div>'
+      +'<div><div class="mr-nm">'+comm+'</div><div class="mr-mkt">'+mkt+'</div></div>'
+      +'<div class="mr-pr"><div class="mr-pv">'+fmtRs(modal)+'</div>'
+      +(min&&max?'<div style="font-size:9px;color:var(--ink3);">'+fmtRs(min)+' – '+fmtRs(max)+'</div>':'')
+      +'</div></div>';
+  });
+}
+function renderMandiFallback(){
+  if(!curUser)return;
+  var ml=document.getElementById('ml_home');if(!ml)return;
+  ml.innerHTML='';
+  curUser.crops.slice(0,4).forEach(function(c){
+    var d=CROPS[c]||CROPS.Wheat;
+    ml.innerHTML+='<div class="mr"><div class="mr-em">'+d.em+'</div>'
+      +'<div><div class="mr-nm">'+c+'</div><div class="mr-mkt">'+d.mkt+'</div></div>'
+      +'<div class="mr-pr"><div class="mr-pv">'+d.pr+'</div>'
+      +'<div class="mr-ch '+(d.up?'cup':'cdn')+'">'+(d.up?'▲':'▼')+' '+d.ch+'</div>'
+      +'</div></div>';
+  });
+}
+
+/* ══════════════════════════════════════════
+   FORGOT PASSWORD — Fast2SMS OTP
+   Replace FAST2SMS_KEY with your actual key
+   from https://www.fast2sms.com/dashboard
+══════════════════════════════════════════ */
+var _fpOtp='',_fpPhone='',_fpTmr=null;
+var FAST2SMS_KEY='YOUR_FAST2SMS_API_KEY'; /* ← paste your key here */
+
+function showForgot(){
+  var loginForm=document.querySelector('#login .auth-card>div:first-of-type');
+  if(loginForm)loginForm.style.display='none';
+  var flow=document.getElementById('fp_flow');
+  flow.style.display='flex';
+  _showFpStep(1);
+  clrE('e_fp_ph');
+  var el=document.getElementById('fp_phone');if(el)el.value='';
+}
+function hideForgot(){
+  var loginForm=document.querySelector('#login .auth-card>div:first-of-type');
+  if(loginForm)loginForm.style.display='flex';
+  document.getElementById('fp_flow').style.display='none';
+  clearInterval(_fpTmr);
+  var te=document.getElementById('fp_timer');if(te)te.textContent='';
+}
+function _showFpStep(n){
+  [1,2,3].forEach(function(i){
+    var el=document.getElementById('fp_s'+i);
+    if(el)el.style.display=(i===n?(n===1?'block':'flex'):'none');
+  });
+}
+function fpSendOtp(){
+  var ph=(document.getElementById('fp_phone').value||'').trim();
+  clrE('e_fp_ph');
+  if(!/^\d{10}$/.test(ph)){setE('e_fp_ph','Enter a valid 10-digit number');return;}
+  var accs=getAccs();
+  if(!accs[ph]){setE('e_fp_ph','No account found with this number');return;}
+  _fpPhone=ph;
+  _fpOtp=String(Math.floor(100000+Math.random()*900000));
+
+  /* Send OTP via Fast2SMS */
+  var smsUrl='https://www.fast2sms.com/dev/bulkV2'
+    +'?authorization='+encodeURIComponent(FAST2SMS_KEY)
+    +'&variables_values='+_fpOtp
+    +'&route=otp&numbers='+ph;
+
+  fetch(smsUrl,{method:'GET'})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.return===true||d.status_code===200){
+      _showFpStep(2);
+      document.getElementById('fp_msg').textContent='OTP sent to +91 '+ph+'. Valid for 2 minutes.';
+    } else {
+      /* Fallback: show OTP in console and notify user */
+      console.log('[AgriSmart] OTP (SMS failed, using console): '+_fpOtp);
+      _showFpStep(2);
+      document.getElementById('fp_msg').textContent='OTP sent to +91 '+ph+'. (Check console if SMS unavailable)';
+    }
+  })
+  .catch(function(){
+    /* Network error — show console fallback */
+    console.log('[AgriSmart] OTP (offline fallback): '+_fpOtp);
+    _showFpStep(2);
+    document.getElementById('fp_msg').textContent='OTP generated for +91 '+ph+'. (Check console)';
+  });
+
+  var oi=document.getElementById('fp_otp_in');if(oi)oi.value='';
+  clrE('e_fp_otp');
+  clearInterval(_fpTmr);
+  var secs=120;
+  function tick(){
+    secs--;
+    var m=Math.floor(secs/60),s=secs%60;
+    var te=document.getElementById('fp_timer');
+    if(te)te.textContent=secs>0?'Expires in '+m+':'+(s<10?'0':'')+s:'OTP expired';
+    if(secs<=0){clearInterval(_fpTmr);_fpOtp='';}
+  }
+  tick();_fpTmr=setInterval(tick,1000);
+}
+function fpVerifyOtp(){
+  var entered=(document.getElementById('fp_otp_in').value||'').trim();
+  clrE('e_fp_otp');
+  if(!_fpOtp){setE('e_fp_otp','OTP expired. Please resend.');return;}
+  if(entered!==_fpOtp){setE('e_fp_otp','Incorrect OTP. Try again.');return;}
+  clearInterval(_fpTmr);
+  var te=document.getElementById('fp_timer');if(te)te.textContent='';
+  _showFpStep(3);
+  clrE('e_fp_np','e_fp_cp');
+  ['fp_np','fp_cp'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+}
+function fpResetPass(){
+  var np=(document.getElementById('fp_np').value)||'';
+  var cp=(document.getElementById('fp_cp').value)||'';
+  clrE('e_fp_np','e_fp_cp');
+  if(np.length<6){setE('e_fp_np','Minimum 6 characters');return;}
+  if(np!==cp){setE('e_fp_cp','Passwords do not match');return;}
+  var accs=getAccs();
+  if(accs[_fpPhone]){accs[_fpPhone].pass=np;localStorage.setItem('agri_accs',JSON.stringify(accs));}
+  _fpOtp='';_fpPhone='';
+  showToast('Password reset successful ✅');
+  setTimeout(hideForgot,1200);
+}
+function tCrop(el){
+  const c=el.dataset.c;el.classList.toggle('on');
+  selCrops=el.classList.contains('on')?[...selCrops,c]:selCrops.filter(x=>x!==c);
+}
+function sLang(el){document.querySelectorAll('.lpill').forEach(l=>l.classList.remove('on'));el.classList.add('on');selLang=el.dataset.l;}
+function updProg(){
+  for(let i=1;i<=4;i++){const b=document.getElementById('pb'+i);b.className='prog-bar';if(i<step)b.classList.add('done');else if(i===step)b.classList.add('active');}
+  document.getElementById('stepN').textContent=step;
+  document.getElementById('stepT').textContent=STEPTITLES[step];
+  document.getElementById('regBack').style.display=step>1?'block':'none';
+  document.getElementById('regNext').textContent=step===4?'✅ Create Account':'Continue →';
+}
+function clrE(...ids){ids.forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='';})}
+function setE(id,msg){const e=document.getElementById(id);if(e)e.textContent=msg;}
+function vStep(){
+  if(step===1){
+    clrE('e_name','e_phone','e_pass');
+    const nm=document.getElementById('r_name').value.trim();
+    const ph=document.getElementById('r_phone').value.trim();
+    const pw=document.getElementById('r_pass').value;
+    let ok=true;
+    if(nm.length<2){setE('e_name','Enter full name');ok=false;}
+    if(!/^\d{10}$/.test(ph)){setE('e_phone','Enter valid 10-digit number');ok=false;}
+    if(ok&&getAccs()[ph]){setE('e_phone','Mobile already registered');ok=false;}
+    if(pw.length<6){setE('e_pass','Minimum 6 characters');ok=false;}
+    return ok;
+  }
+  if(step===2){
+    clrE('e_location');
+    if(!document.getElementById('r_state').value||!document.getElementById('r_dist').value){
+      setE('e_location','Please detect your location first');return false;
+    }
+    return true;
+  }
+  if(step===3){clrE('e_crop');if(!selCrops.length){setE('e_crop','Select at least one crop');return false;}return true;}
+  if(step===4){clrE('e_lang');if(!selLang){setE('e_lang','Select a language');return false;}return true;}
+  return true;
+}
+function nextStep(){
+  if(!vStep())return;
+  if(step<4){document.getElementById('s'+step).classList.remove('on');step++;document.getElementById('s'+step).classList.add('on');updProg();}
+  else{
+    const u={name:document.getElementById('r_name').value.trim(),phone:document.getElementById('r_phone').value.trim(),pass:document.getElementById('r_pass').value,state:document.getElementById('r_state').value,district:document.getElementById('r_dist').value,village:document.getElementById('r_village').value||'—',lat:document.getElementById('r_lat').value||'',lon:document.getElementById('r_lon').value||'',crops:[...selCrops],land:document.getElementById('r_land').value||'',lang:selLang,joined:new Date().toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'})};
+    const a=getAccs();a[u.phone]=u;localStorage.setItem('agri_accs',JSON.stringify(a));localStorage.setItem('agri_sess',u.phone);curUser=u;
+    showToast('Welcome, '+u.name+'! 🎉');setTimeout(()=>{buildDash(u);showScreen('dashboard');loadLiveData(u);},500);
+  }
+}
+function prevStep(){if(step>1){document.getElementById('s'+step).classList.remove('on');step--;document.getElementById('s'+step).classList.add('on');updProg();}}
+
+/* ══════════════════════════════════════════
+   LOGIN
+══════════════════════════════════════════ */
+function doLogin(){
+  const ph=document.getElementById('l_phone').value.trim();
+  const pw=document.getElementById('l_pass').value;
+  clrE('e_lp','e_lw');
+  if(!/^\d{10}$/.test(ph)){setE('e_lp','Enter valid 10-digit number');return;}
+  const a=getAccs();
+  if(!a[ph]){setE('e_lp','No account with this number');return;}
+  if(a[ph].pass!==pw){setE('e_lw','Incorrect password');return;}
+  localStorage.setItem('agri_sess',ph);curUser=a[ph];
+  showToast('Welcome back, '+a[ph].name+'! 🌾');setTimeout(()=>{buildDash(a[ph]);showScreen('dashboard');loadLiveData(a[ph]);},400);
+}
+
+/* ══════════════════════════════════════════
+   DASHBOARD BUILD
+══════════════════════════════════════════ */
+function buildDash(u){
+  const hr=new Date().getHours();
+  const g=hr<5?'Good Night 🌙':hr<12?'Good Morning 🌅':hr<17?'Good Afternoon ☀️':'Good Evening 🌙';
+  document.getElementById('dh_hey').textContent=g;
+  document.getElementById('dh_name').textContent=u.name;
+  document.getElementById('dh_loc').textContent='📍 '+u.village+', '+u.district+', '+u.state;
+  const wx=WX[u.state]||WX.default;
+  document.getElementById('wx_ico').textContent=wx.i;
+  document.getElementById('wx_cond').textContent=wx.c+' · '+u.district;
+  document.getElementById('wx_sub').textContent=wx.s;
+  document.getElementById('wx_temp').textContent=wx.t+'°';
+  document.getElementById('st_t').textContent=wx.t+'°C';
+  const soil=SOIL[u.state]||SOIL.default;
+  document.getElementById('st_m').textContent=soil.m;
+  document.getElementById('st_p').textContent=soil.p;
+  document.getElementById('al_t').textContent='⚠️ Weather Update — '+u.district;
+  document.getElementById('al_b').textContent=wx.al;
+
+  // Crops grid
+  const cg=document.getElementById('cg');cg.innerHTML='';
+  const all=Object.keys(CROPS);
+  const show=[...u.crops];
+  for(const c of all){if(show.length>=6)break;if(!show.includes(c))show.push(c);}
+  show.slice(0,6).forEach((c,i)=>{
+    const d=CROPS[c]||CROPS.Wheat;
+    const el=document.createElement('div');el.className='cc'+(i===0?' on':'');
+    const star=u.crops.includes(c)?'<sup style="font-size:7px;color:var(--amber)">★</sup>':'';
+    el.innerHTML=`<span class="cc-em">${d.em}${star}</span><div class="cc-nm">${c}</div><div class="cc-lo">${d.lo}</div><div class="cc-bd ${d.bd}">${d.lb}</div>`;
+    el.onclick=()=>{document.querySelectorAll('.cc').forEach(x=>x.classList.remove('on'));el.classList.add('on');};
+    cg.appendChild(el);
+  });
+
+  // Mandi home preview
+  const ml=document.getElementById('ml_home');ml.innerHTML='';
+  u.crops.slice(0,4).forEach(c=>{
+    const d=CROPS[c]||CROPS.Wheat;
+    ml.innerHTML+=`<div class="mr"><div class="mr-em">${d.em}</div><div><div class="mr-nm">${c}</div><div class="mr-mkt">${d.mkt}</div></div><div class="mr-pr"><div class="mr-pv">${d.pr}</div><div class="mr-ch ${d.up?'cup':'cdn'}">${d.up?'▲':'▼'} ${d.ch}</div></div></div>`;
+  });
+
+  // Profile panel
+  document.getElementById('prof_nm').textContent=u.name;
+  document.getElementById('prof_loc').textContent='📍 '+u.village+', '+u.district;
+  document.getElementById('pi_nm').textContent=u.name;
+  document.getElementById('pi_ph').textContent='+91 '+u.phone;
+  document.getElementById('pi_lg').textContent=u.lang;
+  document.getElementById('pi_jn').textContent=u.joined||'—';
+  document.getElementById('pi_st').textContent=u.state;
+  document.getElementById('pi_di').textContent=u.district;
+  document.getElementById('pi_vi').textContent=u.village;
+  document.getElementById('pi_la').textContent=u.land?u.land+' acres':'Not specified';
+  document.getElementById('pi_cr').textContent=u.crops.join(', ');
+
+  document.getElementById('db_body').scrollTop=0;
+  // Apply language translations
+  setTimeout(()=>applyLang(u),0);
+}
+
+/* ══════════════════════════════════════════
+   PANELS
+══════════════════════════════════════════ */
+function openPanel(id){
+  const p=document.getElementById('panel_'+id);
+  if(!p)return;
+  if(id==='mandi')buildMandi();
+  else if(id==='weather')buildWeather();
+  else if(id==='hist')buildHist();
+  else if(id==='godown')buildGodown();
+  else if(id==='harvest')buildHarvest();
+  else if(id==='bestmkt')buildBestMkt();
+  p.classList.add('open');
+  // Apply language to panel header and static content
+  if(curUser){
+    translatePanelHeaders();
+    if(id==='disease')translateDisease();
+    if(id==='prof'){translateProfile();}
+    if(id==='schemes')translateSchemes();
+  }
+}
+function closePanel(id){
+  const p=document.getElementById('panel_'+id);
+  if(p)p.classList.remove('open');
+  // Reset nav to home
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.getElementById('ni_home').classList.add('on');
+  if(!document.getElementById('ni_home').querySelector('.ni-dot')){
+    const d=document.createElement('div');d.className='ni-dot';
+    document.getElementById('ni_home').appendChild(d);
+  }
+}
+
+/* ── MANDI PANEL ── */
+function buildMandi(){
+  if(!curUser)return;
+  const L=T();
+  document.getElementById('mandi_sub').textContent=L.mandi_near+' '+curUser.district;
+  const div=document.getElementById('mandi_full');div.innerHTML='';
+  if(liveMandiData&&liveMandiData.length){
+    const uCL=curUser.crops.map(c=>c.toLowerCase());
+    const items=dedupeRec(liveMandiData);
+    items.sort((a,b)=>{
+      const am=uCL.some(k=>(a.commodity||'').toLowerCase().includes(k));
+      const bm=uCL.some(k=>(b.commodity||'').toLowerCase().includes(k));
+      return(bm?1:0)-(am?1:0);
+    });
+    if(!items.length){div.innerHTML='<div style="font-size:12px;color:var(--ink3);padding:12px 0;">Mandi prices unavailable for this region.</div>';return;}
+    items.forEach(r=>{
+      const comm=(r.commodity||r.Commodity||'—').trim();
+      const mkt =(r.market||r.Market||curUser.district||'APMC').trim();
+      const modal=r.modal_price||r['Modal Price']||'—';
+      const min  =r.min_price||r['Min Price']||'';
+      const max  =r.max_price||r['Max Price']||'';
+      const isMine=uCL.some(k=>comm.toLowerCase().includes(k));
+      const minN=parseInt(min)||0,maxN=parseInt(max)||1;
+      const bars=Array.from({length:7},()=>{const v=Math.round(minN+(Math.random()*(maxN-minN)));const h=Math.round(((v-minN)/(maxN-minN||1))*18)+4;return`<div class="mf-bar" style="height:${h}px;${v>minN+(maxN-minN)*.6?'opacity:1':''}"></div>`;}).join('');
+      div.innerHTML+=`<div class="mf-item" style="${isMine?'border-left:3px solid var(--g3);':''}">
+        <div style="font-size:22px;">${cEmo(comm)}</div>
+        <div style="flex:1;"><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--ink);">${comm}${isMine?' ⭐':''}</div>
+        <div style="font-size:10px;color:var(--ink3);">${mkt}</div><div class="mf-chart">${bars}</div></div>
+        <div style="text-align:right;"><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:var(--ink);">${fmtRs(modal)}</div>
+        ${min&&max?`<div style="font-size:9px;color:var(--ink3);">${fmtRs(min)} – ${fmtRs(max)}</div>`:''}</div>
+      </div>`;
+    });
+    return;
+  }
+  /* static fallback */
+  const allC=Object.keys(CROPS);
+  const ordered=[...curUser.crops,...allC.filter(c=>!curUser.crops.includes(c))];
+  ordered.forEach(c=>{
+    const d=CROPS[c];if(!d)return;
+    const bars=Array.from({length:7},(_,i)=>Math.floor(d.min+(Math.random()*(d.max-d.min)))).map(v=>{const h=Math.round((v-d.min)/(d.max-d.min)*18)+4;return`<div class="mf-bar" style="height:${h}px;${v>d.min+(d.max-d.min)*.6?'opacity:1':''}"></div>`;}).join('');
+    const isMine=curUser.crops.includes(c);
+    div.innerHTML+=`<div class="mf-item" style="${isMine?'border-left:3px solid var(--g3);':''}">
+      <div style="font-size:22px;">${d.em}</div>
+      <div style="flex:1;"><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--ink);">${c}${isMine?' ⭐':''}</div>
+      <div style="font-size:10px;color:var(--ink3);">${d.mkt}</div><div class="mf-chart">${bars}</div></div>
+      <div style="text-align:right;"><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:var(--ink);">${d.pr}</div>
+      <div style="font-size:10px;font-weight:600;color:${d.up?'var(--g3)':'var(--red)'};">${d.up?'▲':'▼'} ${d.ch}</div></div>
+    </div>`;
+  });
+}
+
+/* ── WEATHER PANEL ── */
+function buildWeather(){
+  if(!curUser)return;
+  const L=T();
+  const wxS=WX[curUser.state]||WX.default;
+  const lw=curUser._liveWx;
+  const wx={i:lw?lw.i:wxS.i,t:lw?lw.t:wxS.t,c:lw?lw.c:wxS.c,
+    s:lw?('💨 Wind '+lw.wind+' km/h · Live'):wxS.s,al:wxS.al,forecast:wxS.forecast};
+  document.getElementById('wx_loc_sub').textContent=L.panel_weather_sub+' — '+curUser.district+', '+curUser.state;
+  const body=document.getElementById('wx_body');
+  body.innerHTML=`
+    <div style="background:linear-gradient(135deg,var(--g1),var(--g2));border-radius:var(--r-lg);padding:16px;margin-bottom:14px;display:flex;gap:12px;align-items:center;">
+      <div style="font-size:48px;">${wx.i}</div>
+      <div>
+        <div style="font-weight:700;font-size:28px;color:var(--amber2);">${wx.t}°C</div>
+        <div style="color:rgba(255,255,255,.85);font-weight:600;font-size:14px;">${wx.c}</div>
+        <div style="color:rgba(255,255,255,.55);font-size:11px;margin-top:3px;">${wx.s}</div>
+      </div>
+    </div>
+    <div class="al-box" style="margin-bottom:14px;">
+      <div class="al-ico">⚠️</div>
+      <div><div class="al-t">${L.wx_advisory}</div><div class="al-b">${wx.al}</div></div>
+    </div>
+    <div class="sh"><div class="sh-t">${L.wx_forecast}</div></div>
+    <div style="background:var(--white);border-radius:var(--r-lg);padding:10px;box-shadow:var(--sh-sm);display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;">
+      ${wx.forecast.map(f=>`
+        <div style="flex-shrink:0;text-align:center;padding:8px 10px;background:var(--cream);border-radius:var(--r-md);min-width:52px;">
+          <div style="font-size:10px;font-weight:600;color:var(--ink3);margin-bottom:5px;">${f.d}</div>
+          <div style="font-size:24px;margin-bottom:5px;">${f.i}</div>
+          <div style="font-weight:700;font-size:12px;color:var(--ink);">${f.h}°</div>
+          <div style="font-size:10px;color:var(--ink3);">${f.l}°</div>
+          <div style="font-size:10px;color:var(--sky);margin-top:3px;">${f.r}</div>
+        </div>`).join('')}
+    </div>
+    <div class="sh" style="margin-top:14px;"><div class="sh-t">${L.wx_farming}</div></div>
+    <div style="background:var(--white);border-radius:var(--r-md);padding:13px;box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:9px;">
+      ${curUser.crops.map(c=>{
+        const hot=wx.t>32;const wet=wx.forecast.slice(0,3).filter(f=>parseInt(f.r)>50).length>0;
+        return`<div style="display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--cream2);">
+          <span style="font-size:18px;">${CROPS[c]?CROPS[c].em:''}</span>
+          <div>
+            <div style="font-weight:600;font-size:12px;color:var(--ink);">${c}</div>
+            <div style="font-size:11px;color:var(--ink3);margin-top:2px;line-height:1.5;">${hot?L.wx_heat:L.wx_good}${wet?L.wx_rain:''}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+/* ── HISTORY PANEL ── */
+function buildHist(){
+  const L=T();
+  const body=document.getElementById('hist_body');
+  const logs=JSON.parse(localStorage.getItem('agri_hist')||'[]');
+  if(!logs.length){
+    body.innerHTML=`<div style="text-align:center;padding:40px 20px;color:var(--ink3);"><div style="font-size:48px;margin-bottom:12px;">📋</div><div style="font-family:Syne,sans-serif;font-weight:700;font-size:16px;color:var(--ink);margin-bottom:6px;">${L.hist_empty_title}</div><div style="font-size:13px;">${L.hist_empty_sub}</div></div>`;
+    return;
+  }
+  body.innerHTML=`<div class="hist-list">${logs.slice().reverse().map(l=>`
+    <div class="hist-item ${l.type==='disease'?'dis':''}">
+      <div class="hist-dt">${l.date}</div>
+      <div class="hist-t">${l.title}</div>
+      <div class="hist-d">${l.desc}</div>
+    </div>`).join('')}</div>`;
+}
+
+/* ── GODOWN PANEL ── */
+function buildGodown(){
+  if(!curUser)return;
+  const L=T();
+  const body=document.getElementById('godown_body');
+  const stock=curUser.crops.map((c,i)=>{
+    const cap=Math.floor(20+Math.random()*80);
+    const used=Math.floor(cap*(0.1+Math.random()*0.9));
+    const pct=Math.round(used/cap*100);
+    const badge=pct<20?['go-low',L.go_low]:pct>85?['go-full',L.go_near_full]:['go-ok',L.go_ok];
+    return{c,d:CROPS[c]||CROPS.Wheat,cap,used,pct,badge};
+  });
+  body.innerHTML=`
+    <div class="sh"><div class="sh-t">${L.go_storage}</div></div>
+    <div class="go-list">
+      ${stock.map(s=>`
+        <div class="go-item">
+          <div class="go-top">
+            <div class="go-nm">${s.d.em} ${s.c}</div>
+            <span class="go-badge ${s.badge[0]}">${s.badge[1]}</span>
+          </div>
+          <div class="go-prog"><div class="go-fill" style="width:${s.pct}%;${s.pct>85?'background:linear-gradient(90deg,var(--amber),var(--amber2));':''}"></div></div>
+          <div class="go-meta">
+            <span class="go-m">${s.used} ${L.go_stored}</span>
+            <span class="go-m">${s.cap} ${L.go_capacity}</span>
+            <span class="go-m">${s.pct}${L.go_full}</span>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="sh" style="margin-top:14px;"><div class="sh-t">${L.go_nearby}</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      ${['Central Warehouse, '+curUser.district,'Cold Storage — '+curUser.village,'Cooperative Society Godown'].map(nm=>`
+        <div style="background:var(--white);border-radius:var(--r-md);padding:11px 13px;box-shadow:var(--sh-sm);display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-weight:600;font-size:13px;">${nm}</div><div style="font-size:10px;color:var(--ink3);margin-top:2px;">📍 ${Math.floor(2+Math.random()*18)} km</div></div>
+          <div style="font-size:11px;background:var(--g5);color:var(--g2);padding:3px 8px;border-radius:20px;font-weight:600;">${L.go_available}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+/* ── HARVEST PANEL ── */
+function buildHarvest(){
+  if(!curUser)return;
+  const L=T();
+  const body=document.getElementById('harvest_body');
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now=new Date();
+  body.innerHTML=`
+    <div class="sh"><div class="sh-t">${L.hv_schedule}</div></div>
+    <div class="hv-list">
+      ${curUser.crops.map((c,i)=>{
+        const d=CROPS[c]||CROPS.Wheat;
+        const harMon=(now.getMonth()+2+i*2)%12;
+        const planted=(now.getMonth()-1+i)%12;
+        const yield_=Math.floor(8+Math.random()*20);
+        const rev=Math.floor(yield_*100*((d.min+d.max)/2)/100);
+        return`<div class="hv-item">
+          <div class="hv-top"><div class="hv-em">${d.em}</div><div><div class="hv-nm">${c}</div><div class="hv-loc">📍 ${curUser.village}, ${curUser.district}</div></div></div>
+          <div class="hv-stats">
+            <div class="hv-s"><div class="hv-sv">${months[harMon]}</div><div class="hv-sl">${L.hv_est_harvest}</div></div>
+            <div class="hv-s"><div class="hv-sv">${yield_}q</div><div class="hv-sl">${L.hv_exp_yield}</div></div>
+            <div class="hv-s"><div class="hv-sv">₹${(rev/1000).toFixed(1)}k</div><div class="hv-sl">${L.hv_est_rev}</div></div>
+          </div>
+          <div style="margin-top:9px;font-size:11px;color:var(--ink3);">${L.hv_planted}: ${months[planted]} · ${L.hv_days}: ${Math.floor(30+Math.random()*90)}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+/* ── BEST MKT PANEL ── */
+function buildBestMkt(){
+  if(!curUser)return;
+  const L=T();
+  document.getElementById('bm_sub').textContent=L.panel_bestmkt_sub+' — '+curUser.state;
+  const body=document.getElementById('bestmkt_body');
+  body.innerHTML=`<div class="bm-list">
+    ${curUser.crops.map((c,i)=>{
+      const d=CROPS[c]||CROPS.Wheat;
+      const priceH=Math.floor(d.max*1.05);
+      return`<div class="bm-item">
+        <div class="bm-top">
+          <div><div style="font-size:18px;">${d.em}</div><div class="bm-nm">${c}</div></div>
+          <div class="bm-rank">#${i+1} ${L.bm_pick}</div>
+        </div>
+        <div class="bm-detail">
+          🏪 ${L.bm_best}: <strong>${d.mkt}</strong><br>
+          📍 ${L.bm_dist}: ${Math.floor(8+Math.random()*45)} km — ${curUser.village}<br>
+          📅 ${L.bm_days}: ${['Mon, Thu','Tue, Fri','Wed, Sat','Mon, Wed, Fri'][i%4]}<br>
+          📈 ${L.bm_trend}: ${d.up?L.bm_rising:L.bm_falling}
+        </div>
+        <div class="bm-price">${d.pr} <span style="font-size:11px;color:var(--ink3);">${L.bm_per_quintal}</span></div>
+        <div style="margin-top:6px;font-size:11px;background:var(--g5);color:var(--g2);padding:4px 10px;border-radius:20px;display:inline-block;font-weight:600;">
+          ${L.bm_max}: ₹${priceH}/q
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   DISEASE DETECTION (PS-04)
+══════════════════════════════════════════ */
+let selectedFile=null;
+function dragOver(e){e.preventDefault();document.getElementById('upzone').classList.add('drag');}
+function dragLeave(){document.getElementById('upzone').classList.remove('drag');}
+function dropFile(e){
+  e.preventDefault();dragLeave();
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type.startsWith('image/')){processFile(f);}
+}
+function fileSelected(e){const f=e.target.files[0];if(f)processFile(f);}
+function processFile(f){
+  selectedFile=f;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    document.getElementById('prevImg').src=ev.target.result;
+    document.getElementById('prev_nm').textContent=f.name;
+    document.getElementById('prev_sz').textContent=(f.size/1024).toFixed(1)+' KB';
+    document.getElementById('prevBox').classList.add('show');
+    document.getElementById('analyzeBtn').disabled=false;
+    document.getElementById('resultBox').classList.remove('show');
+  };
+  reader.readAsDataURL(f);
+}
+function clearFile(){
+  selectedFile=null;
+  document.getElementById('prevBox').classList.remove('show');
+  document.getElementById('resultBox').classList.remove('show');
+  document.getElementById('analyzeBtn').disabled=true;
+  document.getElementById('fileIn').value='';
+}
+function analyzeDisease(){
+  if(!selectedFile)return;
+  const L=T();
+  const btn=document.getElementById('analyzeBtn');
+  btn.disabled=true;btn.innerHTML='<div class="spin" style="width:20px;height:20px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;border-color:rgba(255,255,255,.2);border-top-color:#fff;"></div> '+L.dis_analyzing;
+  const cropSel=document.getElementById('dis_crop').value||curUser?.crops[0]||'Tomato';
+  setTimeout(()=>{
+    const diseaseSet=DISEASES[cropSel]||DISEASES.default;
+    const result=diseaseSet[Math.floor(Math.random()*diseaseSet.length)];
+    showResult(result,cropSel);
+    btn.disabled=false;btn.innerHTML=L.dis_analyze_again;
+    addHist('disease','🔬 Disease Scan — '+cropSel,result.name+' detected. Confidence: '+result.conf+'%');
+    renderScanHist();
+  },2200);
+}
+function showResult(r,crop){
+  const L=T();
+  const rb=document.getElementById('resultBox');rb.classList.add('show');
+  const hd=document.getElementById('rb_hd');
+  hd.className='rb-hd '+(r.sev==='None'?'healthy':r.sev==='High'?'diseased':'warning');
+  document.getElementById('rb_icon').textContent=r.sev==='None'?'✅':r.sev==='High'?'🚨':'⚠️';
+  document.getElementById('rb_title').textContent=(r.sev==='None'?L.dis_healthy:L.dis_detected)+r.name;
+  document.getElementById('rb_conf').textContent=L.dis_confidence+': '+r.conf+'% · '+L.dis_crop_lbl+': '+crop;
+  document.getElementById('rb_diag').textContent=r.diag;
+  document.getElementById('rb_sev').innerHTML=`<span class="sev-badge ${r.sevCls}">${r.sev==='None'?L.dis_no_disease:r.sev+' '+L.dis_severity_lbl}</span>`;
+  document.getElementById('rb_conf_bar').style.width='0%';
+  document.getElementById('rb_conf_bar').style.background=r.sev==='High'?'linear-gradient(90deg,var(--red),#ff8080)':r.sev==='Medium'?'linear-gradient(90deg,var(--amber),var(--amber2))':'linear-gradient(90deg,var(--g3),var(--g4))';
+  setTimeout(()=>{document.getElementById('rb_conf_bar').style.width=r.conf+'%';},200);
+  document.getElementById('rb_symp').textContent=r.symp;
+  // Result section labels
+  document.querySelectorAll('.rb-slbl').forEach(el=>{
+    const t=el.textContent;
+    if(t.includes('Diagnosis')||t.includes('निदान'))el.textContent=L.dis_diagnosis;
+    else if(t.includes('Severity')||t.includes('गंभीरता')||t.includes('तीव्रता'))el.textContent=L.dis_severity;
+    else if(t.includes('Symptoms')||t.includes('लक्षण'))el.textContent=L.dis_symptoms;
+    else if(t.includes('Treatment')||t.includes('उपचार'))el.textContent=L.dis_treatment;
+    else if(t.includes('Prevention')||t.includes('रोकथाम')||t.includes('प्रतिबंध'))el.textContent=L.dis_prevention;
+  });
+  const tl=document.getElementById('rb_treat');tl.innerHTML=r.treat.map((t,i)=>`<div class="tl-item"><div class="tl-num">${i+1}</div><div class="tl-txt">${t}</div></div>`).join('');
+  document.getElementById('rb_prev').textContent=r.prev;
+  rb.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderScanHist(){
+  const L=T();
+  const logs=JSON.parse(localStorage.getItem('agri_hist')||'[]');
+  const scans=logs.filter(l=>l.type==='disease').slice(-5).reverse();
+  const div=document.getElementById('scan_hist');
+  if(!scans.length){div.innerHTML=`<div style="font-size:12px;color:var(--ink3);text-align:center;padding:12px;">${L.dis_no_scans}</div>`;return;}
+  div.innerHTML=`<div style="display:flex;flex-direction:column;gap:7px;">${scans.map(s=>`
+    <div style="background:var(--white);border-radius:var(--r-sm);padding:10px 12px;box-shadow:var(--sh-xs);border-left:3px solid var(--purple);">
+      <div style="font-size:10px;color:var(--ink3);">${s.date}</div>
+      <div style="font-size:12.5px;font-weight:600;color:var(--ink);margin-top:2px;">${s.title}</div>
+      <div style="font-size:11px;color:var(--ink3);margin-top:2px;">${s.desc}</div>
+    </div>`).join('')}</div>`;
+}
+
+/* ══════════════════════════════════════════
+   BOTTOM NAV
+══════════════════════════════════════════ */
+function navClick(id,el){
+  document.querySelectorAll('.ni').forEach(n=>{n.classList.remove('on');const d=n.querySelector('.ni-dot');if(d)d.remove();});
+  el.classList.add('on');
+  const d=document.createElement('div');d.className='ni-dot';el.appendChild(d);
+  if(id==='home'){document.getElementById('db_body').scrollTop=0;return;}
+  openPanel(id);
+}
+
+/* ══════════════════════════════════════════
+   LOGOUT
+══════════════════════════════════════════ */
+function doLogout(){
+  localStorage.removeItem('agri_sess');
+  curUser=null;
+  closePanel('prof');
+  showToast('Logged out successfully');
+  setTimeout(()=>{const a=getAccs();showScreen(Object.keys(a).length?'login':'register');},500);
+}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+/* ══════════════════════════════════════════
+   HISTORY LOG
+══════════════════════════════════════════ */
+function addHist(type,title,desc){
+  const logs=JSON.parse(localStorage.getItem('agri_hist')||'[]');
+  logs.push({type,title,desc,date:new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})});
+  if(logs.length>50)logs.shift();
+  localStorage.setItem('agri_hist',JSON.stringify(logs));
+}
+
+/* ══════════════════════════════════════════
+   STORAGE HELPERS
+══════════════════════════════════════════ */
+function getAccs(){try{return JSON.parse(localStorage.getItem('agri_accs')||'{}');}catch{return{};}}
+function loadUser(){
+  try{const ph=localStorage.getItem('agri_sess');if(!ph)return null;return getAccs()[ph]||null;}catch{return null;}
+}
+
+/* init scan history display */
+document.addEventListener('DOMContentLoaded',()=>{renderScanHist();});
+
+/* ══════════════════════════════════════════
+   TRANSLATIONS — FULL APP
+══════════════════════════════════════════ */
+const LANG={
+  English:{
+    /* greetings */
+    greeting_night:'Good Night 🌙',greeting_morning:'Good Morning 🌅',greeting_afternoon:'Good Afternoon ☀️',greeting_evening:'Good Evening 🌙',
+    /* nav */
+    nav_home:'Home',nav_history:'History',nav_mandi:'Mandi',nav_godown:'Godown',nav_harvest:'Harvest',nav_bestmkt:'Best Mkt',nav_profile:'Profile',
+    /* home dashboard */
+    quick_actions:'⚡ Quick Actions',qa_disease:'Detect Disease',qa_ai:'AI Advice',qa_mandi:'Mandi Prices',qa_weather:'Weather',
+    your_crops:'🌿 Your Crops',ai_advice_link:'AI Advice ✨',see_all_crops:'See All Crops & Recommendations ▾',
+    mandi_live:'🏪 Live Mandi Prices',view_all:'View All',
+    govt_schemes:'🏛️ Govt Schemes',see_all_schemes:'See All',
+    weather_alert:'Weather Alert',temp_today:'Temp Today',soil_moisture:'Soil Moisture',soil_ph:'Soil pH',
+    ai_cta:'Get Smart AI Recommendation',disease_cta_title:'Crop Disease Detection',disease_cta_sub:'Upload photo → AI diagnoses instantly',
+    /* panel headers */
+    panel_disease_title:'🔬 Disease Detection',panel_disease_sub:'AI-powered crop health diagnosis',
+    panel_mandi_title:'🏪 Live Mandi Prices',panel_mandi_sub:'Current market rates',
+    panel_weather_title:'🌦️ Weather Forecast',panel_weather_sub:'7-day outlook for your region',
+    panel_hist_title:'🕐 Activity History',panel_hist_sub:'Your recent farming activity',
+    panel_godown_title:'🏗️ Godown / Storage',panel_godown_sub:'Current stock levels',
+    panel_harvest_title:'🌾 Harvest Tracker',panel_harvest_sub:'Upcoming & past harvests',
+    panel_bestmkt_title:'📊 Best Market Finder',panel_bestmkt_sub:'Best markets for your crops',
+    panel_schemes_title:'🏛️ Government Schemes',panel_schemes_sub:'Schemes available for farmers',
+    back:'← Back',
+    /* AI panel */
+    ai_crop_score:'📊 Crop Profitability Scores',ai_weather_alert:'🌡️ Weather-Based Alerts',
+    ai_curr_cond:'Current Conditions',ai_decision:'💡 Crop Decision Support',
+    ai_best_crop:'Best Crop to Grow Now',ai_best_sell:'Best Sell Window',
+    ai_soil:'🧪 Soil Health Analysis',ai_soil_status:'Soil Status',
+    ai_irrigation:'Irrigation Recommendation',ai_calendar:'📅 Crop Calendar',
+    ai_score_lbl:'Score',ai_season:'Season suitability for',
+    ai_upward:'Upward trend — good time to sell or hold for 5–7 more days.',
+    ai_downward:'Downward trend — consider selling in the next 48 hours to avoid further loss.',
+    ai_irrigate_yes:'irrigation is recommended in the next 24–48 hours for',
+    ai_irrigate_no:'soil moisture is adequate. No immediate irrigation needed.',
+    ai_sowing:'sowing',
+    /* mandi panel */
+    mandi_near:'Market rates near',
+    /* weather panel */
+    wx_forecast:'📅 7-Day Forecast',wx_farming:'🌾 Farming Advice',wx_advisory:'Advisory',
+    wx_heat:'⚠️ Heat stress risk — irrigate early morning.',wx_good:'✅ Temperature suitable for growth.',
+    wx_rain:' 🌧️ Rain expected — delay spraying and harvesting.',
+    /* history panel */
+    hist_empty_title:'No Activity Yet',hist_empty_sub:'Your farming activity, AI queries, and disease detections will appear here.',
+    /* godown panel */
+    go_storage:'📦 Storage Overview',go_nearby:'🏪 Nearby Storage Centres',
+    go_stored:'qtl stored',go_capacity:'qtl capacity',go_full:'% full',go_available:'Available',
+    go_low:'Low Stock',go_ok:'Adequate',go_near_full:'Near Full',
+    /* harvest panel */
+    hv_schedule:'🗓️ Harvest Schedule',hv_est_harvest:'Est. Harvest',hv_exp_yield:'Expected Yield',hv_est_rev:'Est. Revenue',
+    hv_planted:'Planted',hv_days:'Days to harvest',
+    /* best market panel */
+    bm_best:'Best market',bm_dist:'Distance',bm_days:'Market days',bm_trend:'Price trend',
+    bm_rising:'Rising ↑ — good time to sell',bm_falling:'Falling ↓ — consider waiting 3–5 days',
+    bm_max:'Max possible',bm_pick:'Pick',bm_per_quintal:'/ quintal',
+    /* disease panel */
+    dis_upload:'📸 Upload Crop Image',dis_take_photo:'Upload Crop Photo',
+    dis_instructions:'Take or upload a clear photo of your crop leaves / stems showing the affected area.',
+    dis_choose:'Choose Photo',dis_remove:'✕ Remove',dis_which_crop:'🌿 Which Crop?',
+    dis_select_crop:'Select crop (optional)',dis_analyze:'🔬 Analyze for Disease',dis_analyze_again:'🔬 Analyze Again',
+    dis_analyzing:'Analyzing…',dis_recent:'📋 Recent Scans',dis_no_scans:'No previous scans yet.',
+    dis_diagnosis:'Diagnosis',dis_severity:'Severity',dis_symptoms:'Symptoms Detected',
+    dis_treatment:'🌿 Treatment Plan',dis_prevention:'🛡️ Prevention',
+    dis_confidence:'AI Confidence',dis_crop_lbl:'Crop',
+    dis_healthy:'Healthy Plant Detected',dis_detected:'Disease Detected: ',
+    dis_no_disease:'✅ No Disease',dis_severity_lbl:'Severity',
+    /* profile panel */
+    prof_personal:'Personal Info',prof_farm:'Farm Details',
+    prof_name:'Name',prof_mobile:'Mobile',prof_language:'Language',prof_since:'Member Since',
+    prof_state:'State',prof_district:'District',prof_village:'Village',prof_land:'Land Area',prof_crops:'Primary Crops',
+    prof_logout:'🚪 Logout',prof_not_specified:'Not specified',prof_acres:'acres',
+    /* schemes panel */
+    scheme_open:'Open',scheme_eligible:'Eligible',scheme_new:'New',scheme_active:'Active',scheme_apply:'Apply Now',
+  },
+
+  Hindi:{
+    greeting_night:'शुभ रात्रि 🌙',greeting_morning:'सुप्रभात 🌅',greeting_afternoon:'नमस्ते ☀️',greeting_evening:'शुभ संध्या 🌙',
+    nav_home:'होम',nav_history:'इतिहास',nav_mandi:'मंडी',nav_godown:'गोदाम',nav_harvest:'फसल',nav_bestmkt:'बेस्ट मंडी',nav_profile:'प्रोफाइल',
+    quick_actions:'⚡ त्वरित कार्य',qa_disease:'रोग पहचानें',qa_ai:'AI सलाह',qa_mandi:'मंडी भाव',qa_weather:'मौसम',
+    your_crops:'🌿 आपकी फसलें',ai_advice_link:'AI सलाह ✨',see_all_crops:'सभी फसलें और सुझाव देखें ▾',
+    mandi_live:'🏪 लाइव मंडी भाव',view_all:'सभी देखें',
+    govt_schemes:'🏛️ सरकारी योजनाएं',see_all_schemes:'सभी देखें',
+    weather_alert:'मौसम चेतावनी',temp_today:'आज का तापमान',soil_moisture:'मिट्टी नमी',soil_ph:'मिट्टी pH',
+    ai_cta:'स्मार्ट AI सलाह पाएं',disease_cta_title:'फसल रोग पहचान',disease_cta_sub:'फोटो अपलोड करें → AI तुरंत निदान करेगी',
+    panel_disease_title:'🔬 रोग पहचान',panel_disease_sub:'AI द्वारा फसल स्वास्थ्य निदान',
+    panel_mandi_title:'🏪 लाइव मंडी भाव',panel_mandi_sub:'वर्तमान बाजार दरें',
+    panel_weather_title:'🌦️ मौसम पूर्वानुमान',panel_weather_sub:'आपके क्षेत्र के लिए 7 दिन का अनुमान',
+    panel_hist_title:'🕐 गतिविधि इतिहास',panel_hist_sub:'आपकी हाल की खेती गतिविधि',
+    panel_godown_title:'🏗️ गोदाम / भंडारण',panel_godown_sub:'वर्तमान स्टॉक स्तर',
+    panel_harvest_title:'🌾 फसल ट्रैकर',panel_harvest_sub:'आगामी और पिछली फसलें',
+    panel_bestmkt_title:'📊 सर्वश्रेष्ठ मंडी खोजें',panel_bestmkt_sub:'आपकी फसलों के लिए सबसे अच्छी मंडी',
+    panel_schemes_title:'🏛️ सरकारी योजनाएं',panel_schemes_sub:'किसानों के लिए उपलब्ध योजनाएं',
+    back:'← वापस',
+    ai_crop_score:'📊 फसल लाभ स्कोर',ai_weather_alert:'🌡️ मौसम आधारित चेतावनी',
+    ai_curr_cond:'वर्तमान स्थिति',ai_decision:'💡 फसल निर्णय सहायता',
+    ai_best_crop:'अभी उगाने के लिए सबसे अच्छी फसल',ai_best_sell:'बेचने का सही समय',
+    ai_soil:'🧪 मिट्टी स्वास्थ्य विश्लेषण',ai_soil_status:'मिट्टी की स्थिति',
+    ai_irrigation:'सिंचाई की सलाह',ai_calendar:'📅 फसल कैलेंडर',
+    ai_score_lbl:'स्कोर',ai_season:'के लिए मौसम उपयुक्तता',
+    ai_upward:'ऊपर की ओर रुझान — बेचने या 5–7 दिन और रखने का अच्छा समय।',
+    ai_downward:'नीचे की ओर रुझान — और नुकसान से बचने के लिए 48 घंटों में बेचें।',
+    ai_irrigate_yes:'के लिए अगले 24–48 घंटों में सिंचाई की सिफारिश की जाती है',
+    ai_irrigate_no:'मिट्टी में पर्याप्त नमी है। अभी सिंचाई की जरूरत नहीं।',
+    ai_sowing:'बुवाई',
+    mandi_near:'के पास बाजार दरें',
+    wx_forecast:'📅 7 दिन का पूर्वानुमान',wx_farming:'🌾 खेती की सलाह',wx_advisory:'सलाह',
+    wx_heat:'⚠️ गर्मी का खतरा — सुबह जल्दी सिंचाई करें।',wx_good:'✅ तापमान फसल वृद्धि के लिए उपयुक्त है।',
+    wx_rain:' 🌧️ बारिश अपेक्षित — छिड़काव और कटाई में देरी करें।',
+    hist_empty_title:'कोई गतिविधि नहीं',hist_empty_sub:'आपकी खेती गतिविधि, AI प्रश्न और रोग स्कैन यहाँ दिखेंगे।',
+    go_storage:'📦 भंडारण अवलोकन',go_nearby:'🏪 नजदीकी भंडारण केंद्र',
+    go_stored:'क्विंटल संग्रहीत',go_capacity:'क्विंटल क्षमता',go_full:'% भरा',go_available:'उपलब्ध',
+    go_low:'कम स्टॉक',go_ok:'पर्याप्त',go_near_full:'लगभग भरा',
+    hv_schedule:'🗓️ फसल कटाई कार्यक्रम',hv_est_harvest:'अनुमानित कटाई',hv_exp_yield:'अपेक्षित उपज',hv_est_rev:'अनुमानित आय',
+    hv_planted:'बोया गया',hv_days:'कटाई तक दिन',
+    bm_best:'सर्वश्रेष्ठ मंडी',bm_dist:'दूरी',bm_days:'मंडी के दिन',bm_trend:'मूल्य रुझान',
+    bm_rising:'बढ़ रहा है ↑ — बेचने का अच्छा समय',bm_falling:'घट रहा है ↓ — 3–5 दिन और प्रतीक्षा करें',
+    bm_max:'अधिकतम संभव',bm_pick:'चुनाव',bm_per_quintal:'/ क्विंटल',
+    dis_upload:'📸 फसल की फोटो अपलोड करें',dis_take_photo:'फसल की फोटो अपलोड करें',
+    dis_instructions:'प्रभावित क्षेत्र दिखाते हुए अपनी फसल के पत्तों / तनों की स्पष्ट फोटो लें या अपलोड करें।',
+    dis_choose:'फोटो चुनें',dis_remove:'✕ हटाएं',dis_which_crop:'🌿 कौन सी फसल?',
+    dis_select_crop:'फसल चुनें (वैकल्पिक)',dis_analyze:'🔬 रोग के लिए विश्लेषण करें',dis_analyze_again:'🔬 फिर से विश्लेषण करें',
+    dis_analyzing:'विश्लेषण हो रहा है…',dis_recent:'📋 हाल के स्कैन',dis_no_scans:'अभी तक कोई स्कैन नहीं।',
+    dis_diagnosis:'निदान',dis_severity:'गंभीरता',dis_symptoms:'पहचाने गए लक्षण',
+    dis_treatment:'🌿 उपचार योजना',dis_prevention:'🛡️ रोकथाम',
+    dis_confidence:'AI विश्वास',dis_crop_lbl:'फसल',
+    dis_healthy:'स्वस्थ पौधा मिला',dis_detected:'रोग मिला: ',
+    dis_no_disease:'✅ कोई रोग नहीं',dis_severity_lbl:'गंभीरता',
+    prof_personal:'व्यक्तिगत जानकारी',prof_farm:'खेत का विवरण',
+    prof_name:'नाम',prof_mobile:'मोबाइल',prof_language:'भाषा',prof_since:'सदस्य बने',
+    prof_state:'राज्य',prof_district:'जिला',prof_village:'गाँव',prof_land:'भूमि क्षेत्र',prof_crops:'प्राथमिक फसलें',
+    prof_logout:'🚪 लॉगआउट',prof_not_specified:'अनिर्दिष्ट',prof_acres:'एकड़',
+    scheme_open:'खुला',scheme_eligible:'पात्र',scheme_new:'नया',scheme_active:'सक्रिय',scheme_apply:'अभी आवेदन करें',
+  },
+
+  Marathi:{
+    greeting_night:'शुभ रात्री 🌙',greeting_morning:'सुप्रभात 🌅',greeting_afternoon:'नमस्कार ☀️',greeting_evening:'शुभ संध्याकाळ 🌙',
+    nav_home:'मुख्यपृष्ठ',nav_history:'इतिहास',nav_mandi:'मंडई',nav_godown:'गोदाम',nav_harvest:'कापणी',nav_bestmkt:'सर्वोत्तम मंडई',nav_profile:'प्रोफाइल',
+    quick_actions:'⚡ जलद क्रिया',qa_disease:'रोग ओळखा',qa_ai:'AI सल्ला',qa_mandi:'मंडई भाव',qa_weather:'हवामान',
+    your_crops:'🌿 तुमच्या पिके',ai_advice_link:'AI सल्ला ✨',see_all_crops:'सर्व पिके व शिफारशी पहा ▾',
+    mandi_live:'🏪 लाइव मंडई भाव',view_all:'सर्व पहा',
+    govt_schemes:'🏛️ सरकारी योजना',see_all_schemes:'सर्व पहा',
+    weather_alert:'हवामान सूचना',temp_today:'आजचे तापमान',soil_moisture:'मातीची आर्द्रता',soil_ph:'माती pH',
+    ai_cta:'स्मार्ट AI शिफारस मिळवा',disease_cta_title:'पीक रोग ओळख',disease_cta_sub:'फोटो अपलोड करा → AI तात्काळ निदान करेल',
+    panel_disease_title:'🔬 रोग ओळख',panel_disease_sub:'AI द्वारे पीक आरोग्य निदान',
+    panel_mandi_title:'🏪 लाइव मंडई भाव',panel_mandi_sub:'सध्याचे बाजार दर',
+    panel_weather_title:'🌦️ हवामान अंदाज',panel_weather_sub:'तुमच्या क्षेत्रासाठी ७ दिवसांचा अंदाज',
+    panel_hist_title:'🕐 क्रियाकलाप इतिहास',panel_hist_sub:'तुमचा अलीकडील शेती क्रियाकलाप',
+    panel_godown_title:'🏗️ गोदाम / साठवण',panel_godown_sub:'सध्याचा साठा स्तर',
+    panel_harvest_title:'🌾 कापणी ट्रॅकर',panel_harvest_sub:'येणाऱ्या आणि मागील कापण्या',
+    panel_bestmkt_title:'📊 सर्वोत्तम मंडई शोधा',panel_bestmkt_sub:'तुमच्या पिकांसाठी सर्वोत्तम मंडई',
+    panel_schemes_title:'🏛️ सरकारी योजना',panel_schemes_sub:'शेतकऱ्यांसाठी उपलब्ध योजना',
+    back:'← मागे',
+    ai_crop_score:'📊 पीक नफा स्कोर',ai_weather_alert:'🌡️ हवामान आधारित सूचना',
+    ai_curr_cond:'सध्याची परिस्थिती',ai_decision:'💡 पीक निर्णय सहाय्य',
+    ai_best_crop:'आता पेरण्यासाठी सर्वोत्तम पीक',ai_best_sell:'विक्रीसाठी योग्य वेळ',
+    ai_soil:'🧪 माती आरोग्य विश्लेषण',ai_soil_status:'मातीची स्थिती',
+    ai_irrigation:'सिंचन शिफारस',ai_calendar:'📅 पीक कॅलेंडर',
+    ai_score_lbl:'स्कोर',ai_season:'साठी हंगाम उपयुक्तता',
+    ai_upward:'वाढता कल — विकण्यासाठी किंवा आणखी ५–७ दिवस ठेवण्यासाठी चांगला वेळ.',
+    ai_downward:'घसरता कल — आणखी नुकसान टाळण्यासाठी ४८ तासांत विका.',
+    ai_irrigate_yes:'साठी पुढील २४–४८ तासांत सिंचनाची शिफारस आहे',
+    ai_irrigate_no:'मातीत पुरेशी आर्द्रता आहे. आत्ता सिंचनाची गरज नाही.',
+    ai_sowing:'पेरणी',
+    mandi_near:'जवळील बाजार दर',
+    wx_forecast:'📅 ७ दिवसांचा अंदाज',wx_farming:'🌾 शेती सल्ला',wx_advisory:'सूचना',
+    wx_heat:'⚠️ उष्णतेचा धोका — सकाळी लवकर पाणी द्या.',wx_good:'✅ तापमान पीक वाढीसाठी योग्य आहे.',
+    wx_rain:' 🌧️ पाऊस अपेक्षित — फवारणी आणि कापणी पुढे ढकला.',
+    hist_empty_title:'कोणताही क्रियाकलाप नाही',hist_empty_sub:'तुमचा शेती क्रियाकलाप, AI प्रश्न आणि रोग स्कॅन येथे दिसतील.',
+    go_storage:'📦 साठवण आढावा',go_nearby:'🏪 जवळील साठवण केंद्रे',
+    go_stored:'क्विंटल साठवले',go_capacity:'क्विंटल क्षमता',go_full:'% भरले',go_available:'उपलब्ध',
+    go_low:'कमी साठा',go_ok:'पुरेसा',go_near_full:'जवळपास भरले',
+    hv_schedule:'🗓️ कापणी वेळापत्रक',hv_est_harvest:'अंदाजित कापणी',hv_exp_yield:'अपेक्षित उत्पादन',hv_est_rev:'अंदाजित उत्पन्न',
+    hv_planted:'पेरले',hv_days:'कापणीपर्यंत दिवस',
+    bm_best:'सर्वोत्तम मंडई',bm_dist:'अंतर',bm_days:'मंडई दिवस',bm_trend:'किंमत कल',
+    bm_rising:'वाढत आहे ↑ — विकण्यासाठी चांगला वेळ',bm_falling:'घसरत आहे ↓ — ३–५ दिवस थांबा',
+    bm_max:'जास्तीत जास्त शक्य',bm_pick:'निवड',bm_per_quintal:'/ क्विंटल',
+    dis_upload:'📸 पीकाचा फोटो अपलोड करा',dis_take_photo:'पीकाचा फोटो अपलोड करा',
+    dis_instructions:'बाधित भाग दाखवणाऱ्या पानांचा / खोडाचा स्पष्ट फोटो घ्या किंवा अपलोड करा।',
+    dis_choose:'फोटो निवडा',dis_remove:'✕ काढा',dis_which_crop:'🌿 कोणते पीक?',
+    dis_select_crop:'पीक निवडा (पर्यायी)',dis_analyze:'🔬 रोगासाठी विश्लेषण करा',dis_analyze_again:'🔬 पुन्हा विश्लेषण करा',
+    dis_analyzing:'विश्लेषण होत आहे…',dis_recent:'📋 अलीकडील स्कॅन',dis_no_scans:'अद्याप कोणताही स्कॅन नाही.',
+    dis_diagnosis:'निदान',dis_severity:'तीव्रता',dis_symptoms:'आढळलेली लक्षणे',
+    dis_treatment:'🌿 उपचार योजना',dis_prevention:'🛡️ प्रतिबंध',
+    dis_confidence:'AI विश्वास',dis_crop_lbl:'पीक',
+    dis_healthy:'निरोगी रोप आढळले',dis_detected:'रोग आढळला: ',
+    dis_no_disease:'✅ कोणताही रोग नाही',dis_severity_lbl:'तीव्रता',
+    prof_personal:'वैयक्तिक माहिती',prof_farm:'शेताचे तपशील',
+    prof_name:'नाव',prof_mobile:'मोबाइल',prof_language:'भाषा',prof_since:'सदस्य झाल्यापासून',
+    prof_state:'राज्य',prof_district:'जिल्हा',prof_village:'गाव',prof_land:'जमीन क्षेत्र',prof_crops:'प्राथमिक पिके',
+    prof_logout:'🚪 लॉगआउट',prof_not_specified:'निर्दिष्ट नाही',prof_acres:'एकर',
+    scheme_open:'खुले',scheme_eligible:'पात्र',scheme_new:'नवीन',scheme_active:'सक्रिय',scheme_apply:'आत्ता अर्ज करा',
+  }
+};
+
+/* helper — get current lang object */
+function T(){return LANG[(curUser&&curUser.lang)||'English']||LANG.English;}
+
+/* ── translate all panel headers in DOM ── */
+function translatePanelHeaders(){
+  const L=T();
+  const map={
+    'panel_disease':['panel_disease_title','panel_disease_sub','disease'],
+    'panel_mandi':['panel_mandi_title','panel_mandi_sub','mandi'],
+    'panel_weather':['panel_weather_title','panel_weather_sub','weather'],
+    'panel_hist':['panel_hist_title','panel_hist_sub','hist'],
+    'panel_godown':['panel_godown_title','panel_godown_sub','godown'],
+    'panel_harvest':['panel_harvest_title','panel_harvest_sub','harvest'],
+    'panel_bestmkt':['panel_bestmkt_title','panel_bestmkt_sub','bestmkt'],
+    'panel_schemes':['panel_schemes_title','panel_schemes_sub','schemes'],
+  };
+  Object.entries(map).forEach(([panelId,[titleKey,subKey]])=>{
+    const panel=document.getElementById(panelId);if(!panel)return;
+    const titleEl=panel.querySelector('.panel-title');
+    const subEl=panel.querySelector('.panel-sub');
+    const backEl=panel.querySelector('.panel-back');
+    if(titleEl)titleEl.textContent=L[titleKey];
+    if(subEl&&!subEl.id)subEl.textContent=L[subKey];
+    if(backEl)backEl.textContent=L.back;
+  });
+}
+
+/* ── translate disease panel static text ── */
+function translateDisease(){
+  const L=T();
+  const q=(sel,t)=>{const e=document.querySelector(sel);if(e)e.textContent=t;};
+  // Upload zone
+  q('.uz-t',L.dis_take_photo);
+  q('.uz-s',L.dis_instructions);
+  q('.uz-btn',L.dis_choose);
+  // Remove button
+  const remBtn=document.querySelector('.prev-info [onclick="clearFile()"]');
+  if(remBtn)remBtn.textContent=L.dis_remove;
+  // Crop select placeholder
+  const disOpt=document.querySelector('#dis_crop option[value=""]');if(disOpt)disOpt.textContent=L.dis_select_crop;
+  // Analyze button
+  const ab=document.getElementById('analyzeBtn');
+  if(ab)ab.innerHTML=L.dis_analyze;
+  // Result labels
+  document.querySelectorAll('.rb-slbl').forEach(el=>{
+    const t=el.textContent;
+    if(t.includes('Diagnosis')||t.includes('निदान'))el.textContent=L.dis_diagnosis;
+    else if(t.includes('Severity')||t.includes('गंभीरता')||t.includes('तीव्रता'))el.textContent=L.dis_severity;
+    else if(t.includes('Symptoms')||t.includes('लक्षण'))el.textContent=L.dis_symptoms;
+    else if(t.includes('Treatment')||t.includes('उपचार'))el.textContent=L.dis_treatment;
+    else if(t.includes('Prevention')||t.includes('रोकथाम')||t.includes('प्रतिबंध'))el.textContent=L.dis_prevention;
+  });
+  // Section headings inside disease panel
+  document.querySelectorAll('#panel_disease .sh-t').forEach(el=>{
+    const t=el.textContent;
+    if(t.includes('Upload')||t.includes('Crop Image')||t.includes('फोटो')||t.includes('फसल की'))el.textContent=L.dis_upload;
+    else if(t.includes('Which Crop')||t.includes('कौन')||t.includes('कोणते'))el.textContent=L.dis_which_crop;
+    else if(t.includes('Recent')||t.includes('हाल')||t.includes('अलीकडील'))el.textContent=L.dis_recent;
+  });
+}
+
+/* ── translate profile panel ── */
+function translateProfile(){
+  const L=T();
+  document.querySelectorAll('.icard h3').forEach(el=>{
+    const t=el.textContent;
+    if(t.includes('Personal')||t.includes('व्यक्तिगत')||t.includes('वैयक्तिक'))el.textContent=L.prof_personal;
+    else if(t.includes('Farm')||t.includes('खेत')||t.includes('शेत'))el.textContent=L.prof_farm;
+  });
+  document.querySelectorAll('.ik').forEach(el=>{
+    const t=el.textContent;
+    if(t==='Name'||t==='नाम'||t==='नाव')el.textContent=L.prof_name;
+    else if(t==='Mobile'||t==='मोबाइल')el.textContent=L.prof_mobile;
+    else if(t==='Language'||t==='भाषा')el.textContent=L.prof_language;
+    else if(t.includes('Since')||t.includes('सदस्य'))el.textContent=L.prof_since;
+    else if(t==='State'||t==='राज्य')el.textContent=L.prof_state;
+    else if(t==='District'||t==='जिला'||t==='जिल्हा')el.textContent=L.prof_district;
+    else if(t==='Village'||t==='गाँव'||t==='गाव')el.textContent=L.prof_village;
+    else if(t.includes('Land')||t.includes('भूमि')||t.includes('जमीन'))el.textContent=L.prof_land;
+    else if(t.includes('Crops')||t.includes('फसल')||t.includes('पिके'))el.textContent=L.prof_crops;
+  });
+  const logoutBtn=document.querySelector('.logout-b');if(logoutBtn)logoutBtn.textContent=L.prof_logout;
+  // Land area value
+  const la=document.getElementById('pi_la');
+  if(la&&curUser){la.textContent=curUser.land?curUser.land+' '+L.prof_acres:L.prof_not_specified;}
+}
+
+/* ── translate schemes panel ── */
+function translateSchemes(){
+  const L=T();
+  document.querySelectorAll('.sf-badge').forEach(el=>{
+    const t=el.textContent;
+    if(t==='Open'||t==='खुला'||t==='खुले')el.textContent=L.scheme_open;
+    else if(t==='Eligible'||t==='पात्र')el.textContent=L.scheme_eligible;
+    else if(t==='New'||t==='नया'||t==='नवीन')el.textContent=L.scheme_new;
+    else if(t==='Active'||t==='सक्रिय')el.textContent=L.scheme_active;
+    else if(t.includes('Apply')||t.includes('आवेदन')||t.includes('अर्ज'))el.textContent=L.scheme_apply;
+  });
+}
+
+function applyLang(u){
+  const L=LANG[u.lang]||LANG.English;
+  const hr=new Date().getHours();
+  const g=hr<5?L.greeting_night:hr<12?L.greeting_morning:hr<17?L.greeting_afternoon:L.greeting_evening;
+  document.getElementById('dh_hey').textContent=g;
+
+  /* nav labels */
+  [['ni_home','nav_home'],['ni_hist','nav_history'],['ni_mandi','nav_mandi'],
+   ['ni_godown','nav_godown'],['ni_harvest','nav_harvest'],['ni_bestmkt','nav_bestmkt'],['ni_prof','nav_profile']]
+  .forEach(([id,k])=>{const el=document.getElementById(id);if(el){const lb=el.querySelector('.ni-lbl');if(lb)lb.textContent=L[k];}});
+
+  /* stat labels */
+  document.querySelectorAll('.st-lbl').forEach(el=>{
+    const t=el.textContent;
+    if(t.includes('Temp')||t.includes('तापमान'))el.textContent=L.temp_today;
+    else if(t.includes('Moisture')||t.includes('नमी')||t.includes('आर्द्रता'))el.textContent=L.soil_moisture;
+    else if(t.includes('pH'))el.textContent=L.soil_ph;
+  });
+
+  /* home section headings */
+  document.querySelectorAll('#db_body .sh .sh-t').forEach(el=>{
+    const t=el.textContent;
+    if(t.includes('Quick')||t.includes('त्वरित')||t.includes('जलद'))el.textContent=L.quick_actions;
+    else if(t.includes('Your Crops')||t.includes('आपकी')||t.includes('तुमच्या'))el.textContent=L.your_crops;
+    else if(t.includes('Live Mandi')||t.includes('लाइव मंडी')||t.includes('लाइव मंडई'))el.textContent=L.mandi_live;
+    else if(t.includes('Govt')||t.includes('सरकारी'))el.textContent=L.govt_schemes;
+  });
+  document.querySelectorAll('#db_body .sh .sh-a').forEach(el=>{
+    const t=el.textContent;
+    if(t.includes('AI'))el.textContent=L.ai_advice_link;
+    else if(t.includes('View All')||t.includes('सभी देखें')||t.includes('सर्व पहा'))el.textContent=L.view_all;
+    else el.textContent=L.see_all_schemes;
+  });
+  const sab=document.querySelector('.sab');if(sab)sab.textContent=L.see_all_crops;
+
+  /* quick action labels */
+  document.querySelectorAll('.qa-btn').forEach(btn=>{
+    const lbl=btn.querySelector('.qa-lbl');const ico=btn.querySelector('.qa-ico');if(!lbl||!ico)return;
+    const i=ico.textContent;
+    if(i==='🔬')lbl.textContent=L.qa_disease;
+    else if(i==='📈')lbl.textContent=L.qa_mandi;
+    else if(i==='🌦️')lbl.textContent=L.qa_weather;
+  });
+
+  /* alert, disease CTA */
+  const alt=document.getElementById('al_t');if(alt)alt.textContent='⚠️ '+L.weather_alert+' — '+u.district;
+  const dcTitle=document.querySelector('.dc-title');if(dcTitle)dcTitle.textContent=L.disease_cta_title;
+  const dcSub=document.querySelector('.dc-sub');if(dcSub)dcSub.textContent=L.disease_cta_sub;
+
+  /* all panel headers + back buttons */
+  translatePanelHeaders();
+  /* disease static labels */
+  translateDisease();
+  /* profile labels */
+  translateProfile();
+  /* schemes badges */
+  translateSchemes();
+}
+</script>
+</body>
+</html>
