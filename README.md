@@ -56,13 +56,13 @@ https://agriveista.vercel.app
 ### 🌿 Splash Screen
 
 <p align="center">
-  <img src="./screenshots/splash.png" width="300">
+  <img width="300" height="1422" alt="image" src="https://github.com/user-attachments/assets/6ee5fd11-9bb2-46fd-a1af-388cbb181624" />
 </p>
 
 ### 📊 Dashboard
 
 <p align="center">
-  <img src="./screenshots/dashboard.png" width="600">
+  <img width="300" height="1426" alt="image" src="https://github.com/user-attachments/assets/c5766357-ed86-441e-ba16-f49af853a158" />
 </p>
 
 ---
